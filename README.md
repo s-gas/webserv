@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by sgavrilo, sgaspari*
+*This project has been created as part of the 42 curriculum by sgavrilo, and sgaspari*
 
 # webserv
 
