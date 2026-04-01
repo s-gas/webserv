@@ -7,6 +7,8 @@
 class Server {
     uint16_t listen;
     std::string root;
+public:
+    Server(std::string fileName);
 };
 
 #endif
