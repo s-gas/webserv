@@ -4,5 +4,6 @@
 // Our Headers
 #include "defines.hpp"
 #include "Server.hpp"
+#include "Log.hpp"
 
 #endif

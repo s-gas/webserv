@@ -1,4 +1,9 @@
 #include "Server.hpp"
+#include "Log.hpp"
+#include "defines.hpp"
+#include <iostream>
+#include <stdexcept>
+#include <string>
 
 // public ----------------------------------------------------------------------
 
@@ -9,7 +14,7 @@ Server::Server(int port) : _port(port), _serverFd(-1) {
 
 Server::~Server() {
   if (_serverFd != -1) {
-    std::cout << "[INFO] Closing server socket" << std::endl;
+    Log::info("Closing server socket");
     close(_serverFd);
   }
 }
@@ -31,6 +36,7 @@ void Server::init() {
   if (listen(_serverFd, 10) == ERROR)
     throw std::runtime_error("Listen failed");
 
+  Log::info() << "[INFO] Server is listening on port " << _port << std::endl;
   std::cout << "[INFO] Server is listening on port " << _port << std::endl;
 }
 
@@ -46,7 +52,7 @@ void Server::run() {
       std::cerr << "[Error] Failed to accept connection." << std::endl;
       continue;
     }
-    std::cout << "[INFO] Connection accepted!" << std::endl;
+    Log::info("Connection accepted!");
 
     std::memset(buffer, 0, sizeof(buffer));
     int bytesRead = read(newSocket, buffer, sizeof(buffer) - 1);
@@ -58,7 +64,7 @@ void Server::run() {
         "12\r\n\r\nHello World!";
     write(newSocket, httpResponse.c_str(), httpResponse.length());
     close(newSocket);
-    std::cout << "[INFO] Connection closed!" << std::endl;
+    Log::info("Connection closed!");
   }
 }
 

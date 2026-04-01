@@ -16,7 +16,7 @@ OBJ_DIR		= obj
 INC_DIR		= inc
 
 # Source files
-SRC_FILES	= $(addsuffix .cpp, main Server)
+SRC_FILES	= $(addsuffix .cpp, main Server Log)
 SRCS		= $(addprefix $(SRC_DIR)/, $(SRC_FILES))
 
 # Object and Dependency files

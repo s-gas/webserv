@@ -1,12 +1,8 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "defines.hpp"
 #include <cstring>
-#include <iostream>
 #include <netinet/in.h>
-#include <stdexcept>
-#include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 
