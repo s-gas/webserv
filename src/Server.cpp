@@ -46,6 +46,7 @@ void Server::run() {
   char buffer[1024];
 
   while (true) {
+    clientAddrLen = sizeof(clientAddr);
     int newSocket =
         accept(_serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
     if (newSocket == ERROR) {
