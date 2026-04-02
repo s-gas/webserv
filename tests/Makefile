@@ -6,12 +6,13 @@ OBJ_DIR     =   build
 
 TEST_SRCS   =   tests.cpp \
                 testCheckExtension.cpp \
-                testCheckDirectiveBlocks.cpp \
+                testParseDirectives.cpp \
 				testReadFile.cpp
 
 DEP_SRCS    =   checkExtension.cpp \
-                checkDirectiveBlocks.cpp \
-				readFile.cpp
+                parseDirectives.cpp \
+				readFile.cpp \
+				Block.cpp
 
 TEST_OBJS   =   $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(TEST_SRCS))
 DEP_OBJS    =   $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(DEP_SRCS))

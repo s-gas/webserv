@@ -3,9 +3,10 @@
 
 #include <fstream>
 #include <string>
+#include "Block.hpp"
 
 void readFile(std::ifstream &file, std::string &fileName);
 void checkExtension(std::string &fileName);
-void checkDirectiveBlocks(std::ifstream &file);
+void parseDirectives(Block &block, std::ifstream &file, int level);
 
 #endif
