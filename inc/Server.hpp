@@ -14,7 +14,7 @@ class Server {
 
 public:
   Server(int port);
-  ~Server(); // empty destructor
+  ~Server(); // destructor
 
   // methods
   void init();
