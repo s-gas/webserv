@@ -34,7 +34,7 @@ $(NAME): $(OBJS)
 	@echo "$(GREEN)|--$(NAME) created successfully!--|$(RESET)"
 
 # Compiling .cpp to .o
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCS)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
