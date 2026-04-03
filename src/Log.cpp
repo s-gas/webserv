@@ -3,21 +3,13 @@
 
 // public ----------------------------------------------------------------------
 
-void Log::debug() { Log(DEBUG); }
+Log::Log(status level) : _level(level) {}
 
-void Log::info() { Log(INFO); }
-
-void Log::error() { Log(ERROR); }
-
-Log::Log(LogLevel level) : _level(level) {}
-
-Log::~Log() {
-  log(_level, _ss.str());
-}
+Log::~Log() { log(_level, _ss.str()); }
 
 // private ---------------------------------------------------------------------
 
-void Log::log(LogLevel level, const std::string &msg) {
+void Log::log(status level, const std::string &msg) {
   std::string label;
   std::string color;
 

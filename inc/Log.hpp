@@ -1,6 +1,7 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
+#include "defines.hpp"
 #include <sstream>
 #include <string>
 
@@ -12,13 +13,8 @@
 class Log {
 
 public:
-  enum LogLevel { DEBUG, INFO, ERROR };
-
-  Log(LogLevel);
-
-  static void debug(Log);
-  static void info(Log);
-  static void error(const std::string &msg);
+  Log(status);
+  ~Log();
 
   template <typename T> Log &operator<<(const T &msg) {
     _ss << msg;
@@ -26,14 +22,15 @@ public:
   }
 
 private:
-  LogLevel _level;
+  status _level;
   std::stringstream _ss;
-  static void log(LogLevel level, const std::string &msg);
 
-  Log();                       // empty constructor
-  Log(Log const &);            // copy constructor
-  Log &operator=(Log const &); // copy assignment operator
-  ~Log();                      // destructor
+  static void log(status level, const std::string &msg);
+
+  // Rest of OFC
+  Log();
+  Log(Log const &);
+  Log &operator=(Log const &);
 };
 
 #endif
