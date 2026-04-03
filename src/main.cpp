@@ -8,7 +8,7 @@ int main() {
     server.run();
   } catch (const std::exception &e) {
     LOG_ERROR << e.what();
-    return 1;
+    return FAILURE;
   }
-  return 0;
+  return SUCCESS;
 }

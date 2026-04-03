@@ -20,8 +20,8 @@ Server::~Server() {
 }
 
 // methods
-void Server::init() {
 
+void Server::init() {
   Log::setLogFile("webserv.log");
 
   _serverFd = socket(AF_INET, SOCK_STREAM, 0);
