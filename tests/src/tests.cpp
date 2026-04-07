@@ -24,4 +24,7 @@ int main() {
     testParseDirectives(7, "conf-files/test7.conf", "throw");
     testParseDirectives(8, "conf-files/test8.conf", "pass");
     testParseDirectives(9, "conf-files/test9.conf", "throw");
+    testParseDirectives(10, "conf-files/test10.conf", "pass");
+    testParseDirectives(11, "conf-files/test11.conf", "pass");
+    testParseDirectives(12, "conf-files/test12.conf", "pass");
 }

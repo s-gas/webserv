@@ -45,9 +45,20 @@ void parseDirective(std::string &line, Block &block) {
 }
 
 void storeEndPoint(LocationBlock &location, std::string line) {
-    size_t start = line.find("location");
-    (void)start;
-    (void)location;
+    std::string string = "location";
+    size_t start = line.find(string) + string.length();
+    size_t end = line.length();
+    std::string endpoint = "";
+    for (size_t i = start; i < end; i++) {
+        while (i < end && isspace(line[i])) i++;
+        while (i < end && !isspace(line[i])) {
+            endpoint += line[i];
+            i++;
+        }
+        break;
+    }
+    location.endpoint = endpoint;
+    std::cout << "endpoint: " << location.endpoint << std::endl;
 }
 
 void parseDirectives(Block &block, std::ifstream &file, int level) {
