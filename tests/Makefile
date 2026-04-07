@@ -11,6 +11,7 @@ TEST_SRCS   =   tests.cpp \
 
 DEP_SRCS    =   checkExtension.cpp \
                 parseDirectives.cpp \
+				parseUtils.cpp \
 				readFile.cpp \
 				Block.cpp
 
