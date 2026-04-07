@@ -17,9 +17,11 @@ INC_DIR		= inc
 
 # Source files
 SRC_FILES	= $(addsuffix .cpp, main \
-								Server \
-								Log \
 								Block \
+								Main \
+								Server \
+								Location \
+								Log \
 								checkExtension \
 								parseDirectives \
 								parseUtils \

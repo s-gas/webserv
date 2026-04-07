@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "Block.hpp"
+#include "Server.hpp"
 
 void readFile(std::ifstream &file, std::string &fileName);
 void checkExtension(std::string &fileName);

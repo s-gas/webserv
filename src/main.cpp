@@ -8,17 +8,13 @@ int main(int argc, char *argv[]) {
   }
   std::ifstream configFile;
   std::string fileName = argv[1];
-  checkExtension(fileName);
-  readFile(configFile, fileName);
-  MainBlock main;
-  parseDirectives(main, configFile, 0);
-
-  // join by deciding how to design Server class 
-
-  Server server(PORT);
+  Main main;
   try {
-    server.init();
-    server.run();
+    checkExtension(fileName);
+    readFile(configFile, fileName);
+    parseDirectives(main, configFile, 0);
+    main.server.init();
+    main.server.run();
   } catch (const std::exception &e) {
     LOG_ERROR << e.what();
     return 1;
