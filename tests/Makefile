@@ -13,7 +13,11 @@ DEP_SRCS    =   checkExtension.cpp \
                 parseDirectives.cpp \
 				parseUtils.cpp \
 				readFile.cpp \
-				Block.cpp
+				Block.cpp \
+				Main.cpp \
+				Server.cpp \
+				Location.cpp \
+				Log.cpp
 
 TEST_OBJS   =   $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(TEST_SRCS))
 DEP_OBJS    =   $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(DEP_SRCS))

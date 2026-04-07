@@ -1,5 +1,5 @@
 #include "tests.hpp"
-#include "Block.hpp"
+#include "Server.hpp"
 
 int main() {
     // checkExtension()
@@ -43,7 +43,7 @@ int main() {
     endpoints[1] = "/";
     endpoints[2] = "/api";
     testEndpoints(16, "conf-files/test13.conf", endpoints, 3);
-    testListenDirective(17, "conf-files/test14.conf", 43);
+    testListenDirective(17, "conf-files/test14.conf", 8000);
     testParseDirectives(18, "conf-files/test15.conf", "throw");
     testParseDirectives(19, "conf-files/test16.conf", "throw");
     testParseDirectives(20, "conf-files/test17.conf", "throw");

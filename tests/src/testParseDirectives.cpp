@@ -2,7 +2,7 @@
 #include <exception>
 #include "tests.hpp"
 #include "parse.hpp"
-#include "Block.hpp"
+#include "Server.hpp"
 
 void testParseDirectives(int N, std::string argument, std::string string) {
     std::string failure = std::string("parseDirectives()  -->  ") + RED + "FAIL" + RESET;
@@ -58,7 +58,7 @@ void testListenDirective(int N, std::string argument, size_t port) {
     Main main;
     try {
         parseDirectives(main, file, 0);
-        if (main.server.listen == port) {
+        if (main.server._port == static_cast<int>(port)) {
             std::cout << N << ": " << success << std::endl;
         } else {
             std::cout << N << ": " << failure << std::endl;
