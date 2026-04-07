@@ -59,3 +59,18 @@ std::vector<std::string> split(std::string line) {
     if (end - start > 0) v.push_back(line.substr(start, end - start));
     return v;
 }
+
+bool isNumber(std::string string) {
+    for (size_t i = 0; i < string.length(); i++) {
+        if (!isdigit(string[i])) return false;
+    }
+    return true;
+}
+
+std::string removeSemicolon(std::string token) {
+    size_t pos = token.find(";");
+    if (pos == token.npos || pos != token.length() - 1) {
+        throw std::runtime_error("Error: simple directive must end with semicolon (;)");
+    }
+    return token.substr(0, token.length() - 1);
+}

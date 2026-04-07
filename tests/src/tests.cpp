@@ -2,6 +2,7 @@
 #include "Block.hpp"
 
 int main() {
+    // checkExtension()
     testCheckExtension(1, "", "throw");
     testCheckExtension(2, "wrong", "throw");
     testCheckExtension(3, "text.txt", "throw");
@@ -12,9 +13,13 @@ int main() {
     testCheckExtension(8, "something.conff", "throw");
     testCheckExtension(9, "else.con", "throw");
     testCheckExtension(10, "config", "throw");
+
+    // readFile()
     testReadFile(1, "conf-files/test1.conf", "pass");
     testReadFile(2, "conf-files/test2.conf", "pass");
     testReadFile(3, "conf-files/dontexist.conf", "throw");
+
+    // parseDirectives()
     testParseDirectives(1, "conf-files/test1.conf", "pass");
     testParseDirectives(2, "conf-files/test2.conf", "throw");
     testParseDirectives(3, "conf-files/test3.conf", "throw");
@@ -38,4 +43,8 @@ int main() {
     endpoints[1] = "/";
     endpoints[2] = "/api";
     testEndpoints(16, "conf-files/test13.conf", endpoints, 3);
+    testListenDirective(17, "conf-files/test14.conf", 43);
+    testParseDirectives(18, "conf-files/test15.conf", "throw");
+    testParseDirectives(19, "conf-files/test16.conf", "throw");
+    testParseDirectives(20, "conf-files/test17.conf", "throw");
 }

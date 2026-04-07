@@ -14,5 +14,7 @@ void checkOnlySpaces(std::string line, size_t start, size_t end);
 void checkBetweenDirectiveAndBrace(std::string line, size_t start, size_t end, std::string type);
 void checkEndPoint(std::string line, size_t start, size_t end);
 std::vector<std::string> split(std::string line);
+bool isNumber(std::string string);
+std::string removeSemicolon(std::string token);
 
 #endif

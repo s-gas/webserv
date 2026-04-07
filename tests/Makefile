@@ -7,8 +7,7 @@ OBJ_DIR     =   build
 TEST_SRCS   =   tests.cpp \
                 testCheckExtension.cpp \
                 testParseDirectives.cpp \
-				testReadFile.cpp \
-				testEndpoints.cpp
+				testReadFile.cpp
 
 DEP_SRCS    =   checkExtension.cpp \
                 parseDirectives.cpp \
