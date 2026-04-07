@@ -1,6 +1,7 @@
 #include <cctype>
 #include <string>
 #include <iostream>
+#include <vector>
 
 bool isNotEmpty(std::string line) {
     for (size_t i = 0; i < line.length(); i++) {
@@ -42,4 +43,19 @@ void checkBetweenDirectiveAndBrace(std::string line, size_t start, size_t end, s
     } else if (type == "location") {
         checkEndPoint(line, start, end);
     }
+}
+
+std::vector<std::string> split(std::string line) {
+    std::vector<std::string> v;
+    size_t start = 0;
+    size_t end = 0;
+    while (end < line.length()) {
+        if (isspace(line[end])) {
+            if (end - start > 0) v.push_back(line.substr(start, end - start));
+            start = end + 1;
+        }
+        end++;
+    }
+    if (end - start > 0) v.push_back(line.substr(start, end - start));
+    return v;
 }

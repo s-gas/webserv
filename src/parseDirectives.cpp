@@ -45,19 +45,11 @@ void parseDirective(std::string &line, Block &block) {
 }
 
 void storeEndPoint(LocationBlock &location, std::string line) {
-    std::string string = "location";
-    size_t start = line.find(string) + string.length();
-    size_t end = line.length();
-    std::string endpoint = "";
-    for (size_t i = start; i < end; i++) {
-        while (i < end && isspace(line[i])) i++;
-        while (i < end && !isspace(line[i])) {
-            endpoint += line[i];
-            i++;
-        }
-        break;
+    std::vector<std::string> tokens = split(line);
+    if (tokens.size() != 3 || tokens[0] != "location" || tokens[2] != "{") {
+        throw std::runtime_error("Error: invalid token");
     }
-    location.endpoint = endpoint;
+    location.endpoint = tokens[1];
 }
 
 void parseDirectives(Block &block, std::ifstream &file, int level) {

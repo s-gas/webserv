@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 #include "Block.hpp"
 
 void readFile(std::ifstream &file, std::string &fileName);
@@ -12,5 +13,6 @@ bool isNotEmpty(std::string line);
 void checkOnlySpaces(std::string line, size_t start, size_t end);
 void checkBetweenDirectiveAndBrace(std::string line, size_t start, size_t end, std::string type);
 void checkEndPoint(std::string line, size_t start, size_t end);
+std::vector<std::string> split(std::string line);
 
 #endif
