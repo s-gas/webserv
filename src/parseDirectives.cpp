@@ -58,7 +58,6 @@ void storeEndPoint(LocationBlock &location, std::string line) {
         break;
     }
     location.endpoint = endpoint;
-    std::cout << "endpoint: " << location.endpoint << std::endl;
 }
 
 void parseDirectives(Block &block, std::ifstream &file, int level) {

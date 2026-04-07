@@ -27,4 +27,15 @@ int main() {
     testParseDirectives(10, "conf-files/test10.conf", "pass");
     testParseDirectives(11, "conf-files/test11.conf", "pass");
     testParseDirectives(12, "conf-files/test12.conf", "pass");
+    std::string endpoints[10];
+    endpoints[0] = "/";
+    testEndpoints(13, "conf-files/test10.conf", endpoints, 1);
+    endpoints[0] = "/api";
+    testEndpoints(14, "conf-files/test11.conf", endpoints, 1);
+    endpoints[0] = "/var/www/";
+    testEndpoints(15, "conf-files/test12.conf", endpoints, 1);
+    endpoints[0] = "/var/www/";
+    endpoints[1] = "/";
+    endpoints[2] = "/api";
+    testEndpoints(16, "conf-files/test13.conf", endpoints, 3);
 }
