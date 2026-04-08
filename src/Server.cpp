@@ -36,6 +36,10 @@ void Server::init() {
   if (_serverFd == ERROR)
     throw std::runtime_error("Socket creation failed");
 
+  int enable = 1;
+  if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == ERROR)
+    throw std::runtime_error("setsockopt() failed");
+
   _address.sin_family = AF_INET;
   _address.sin_port = htons(_port);
   _address.sin_addr.s_addr = htonl(INADDR_ANY);
