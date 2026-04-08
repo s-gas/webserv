@@ -1,29 +1,65 @@
 #ifndef SERVER_HPP
-#define SERVER_HPP
+# define SERVER_HPP
 
 #include <cstring>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <string>
+#include <vector>
 
-class Server {
+enum BlockType {
+    MAIN,
+    SERVER,
+    LOCATION
+};
 
+class Block {
 public:
-  Server(int port);
-  ~Server(); // destructor
+    enum BlockType type;
+    std::string root;
 
-  // methods
-  void init();
-  void run();
+    Block(enum BlockType type);
+    virtual ~Block() {}
 
-private:
-  int _port;
-  int _serverFd;
-  struct sockaddr_in _address;
+    virtual void addChild(Block &block) = 0;
+    virtual void addListen(size_t port) = 0;
+};
 
-  Server();                          // empty constructor
-  Server(Server const &);            // copy constructor
-  Server &operator=(Server const &); // copy assignment operator
+class Location: public Block {
+public:
+    std::string endpoint;
+
+    Location();
+
+    void addChild(Block &block);
+    void addListen(size_t port);
+};
+
+class Server: public Block {
+public:
+    int _port;
+    int _serverFd;
+    struct sockaddr_in _address;
+    std::vector<Location> locations;
+
+    Server();
+    ~Server();
+
+    void init();
+    void run();
+    void addChild(Block &block);
+    void addListen(size_t port);
+};
+
+class Main: public Block {
+public:
+    Server server;
+
+    Main();
+
+    void addChild(Block &block);
+    void addListen(size_t port);
 };
 
 #endif

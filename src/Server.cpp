@@ -5,10 +5,10 @@
 #include <stdexcept>
 #include <string>
 
-// public ----------------------------------------------------------------------
+// public
 
-// setting fd to -1, so the destructor ignores uninitialized fds
-Server::Server(int port) : _port(port), _serverFd(-1) {
+Server::Server()
+: Block(SERVER), _port(8080), _serverFd(-1) {
   std::memset(&_address, 0, sizeof(_address));
 }
 
@@ -20,6 +20,14 @@ Server::~Server() {
 }
 
 // methods
+
+void Server::addChild(Block &block) {
+    locations.push_back(static_cast<Location&>(block));
+}
+
+void Server::addListen(size_t port) {
+    this->_port = port;
+}
 
 void Server::init() {
   Log::setLogFile("webserv.log");
