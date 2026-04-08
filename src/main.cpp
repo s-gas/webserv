@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     readFile(configFile, fileName);
     parseDirectives(main, configFile, 0);
     main.server.init();
-    main.server.run();
+    main.run();
   } catch (const std::exception &e) {
     LOG_ERROR << e.what();
     return FAILURE;

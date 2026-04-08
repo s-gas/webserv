@@ -1,14 +1,13 @@
 #include "Server.hpp"
 #include "Log.hpp"
 #include "defines.hpp"
-#include <iostream>
+#include <fcntl.h>
 #include <stdexcept>
 #include <string>
 
 // public
 
-Server::Server()
-: Block(SERVER), _port(8080), _serverFd(-1) {
+Server::Server() : Block(SERVER), _port(8080), _serverFd(-1) {
   std::memset(&_address, 0, sizeof(_address));
 }
 
@@ -22,12 +21,10 @@ Server::~Server() {
 // methods
 
 void Server::addChild(Block &block) {
-    locations.push_back(static_cast<Location&>(block));
+  locations.push_back(static_cast<Location &>(block));
 }
 
-void Server::addListen(size_t port) {
-    this->_port = port;
-}
+void Server::addListen(size_t port) { this->_port = port; }
 
 void Server::init() {
   Log::setLogFile("webserv.log");
@@ -35,9 +32,11 @@ void Server::init() {
   _serverFd = socket(AF_INET, SOCK_STREAM, 0);
   if (_serverFd == ERROR)
     throw std::runtime_error("Socket creation failed");
-
+  if (fcntl(_serverFd, F_SETFL, O_NONBLOCK) == ERROR)
+    throw std::runtime_error("fcntl() failed");
   int enable = 1;
-  if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == ERROR)
+  if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) ==
+      ERROR)
     throw std::runtime_error("setsockopt() failed");
 
   _address.sin_family = AF_INET;
@@ -51,35 +50,6 @@ void Server::init() {
     throw std::runtime_error("Listen failed");
 
   LOG_INFO << "Server is listening on port " << _port;
-}
-
-void Server::run() {
-  struct sockaddr_in clientAddr;
-  socklen_t clientAddrLen = sizeof(clientAddr);
-  char buffer[1024];
-
-  while (true) {
-    clientAddrLen = sizeof(clientAddr);
-    int newSocket =
-        accept(_serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
-    if (newSocket == ERROR) {
-      LOG_ERROR << "Failed to accept connection.";
-      continue;
-    }
-    LOG_INFO << "Connection accepted!";
-
-    std::memset(buffer, 0, sizeof(buffer));
-    int bytesRead = read(newSocket, buffer, sizeof(buffer) - 1);
-    if (bytesRead > 0) {
-      std::cout << buffer << std::endl;
-    }
-    std::string httpResponse =
-        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
-        "12\r\n\r\nHello World!";
-    write(newSocket, httpResponse.c_str(), httpResponse.length());
-    close(newSocket);
-    LOG_INFO << "Connection closed!";
-  }
 }
 
 // private ---------------------------------------------------------------------

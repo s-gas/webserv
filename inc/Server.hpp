@@ -1,12 +1,14 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+#include "defines.hpp"
 #include <cstring>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <sys/epoll.h>
 
 enum BlockType {
     MAIN,
@@ -47,7 +49,6 @@ public:
     ~Server();
 
     void init();
-    void run();
     void addChild(Block &block);
     void addListen(size_t port);
 };
@@ -55,9 +56,15 @@ public:
 class Main: public Block {
 public:
     Server server;
+    int _epollFd;
+    struct epoll_event _event;
+    struct epoll_event _events[MAX_EVENTS];
 
     Main();
 
+    void handleNewConnections();
+    void handleClientData(int i);
+    void run();
     void addChild(Block &block);
     void addListen(size_t port);
 };
