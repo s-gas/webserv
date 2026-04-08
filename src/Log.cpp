@@ -25,6 +25,7 @@ void Log::setLogFile(const std::string &filename) {
 
 // private ---------------------------------------------------------------------
 
+
 void Log::log(logLevel level, const std::string &msg) {
   std::string label;
   std::string color;
