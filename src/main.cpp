@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
   try {
     checkExtension(fileName);
     readFile(configFile, fileName);
-    parseDirectives(main, configFile, 0);
+    parse(main, configFile);
     main.server.init();
     main.server.run();
   } catch (const std::exception &e) {

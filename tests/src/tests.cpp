@@ -48,4 +48,5 @@ int main() {
     testParseDirectives(19, "conf-files/test16.conf", "throw");
     testParseDirectives(20, "conf-files/test17.conf", "throw");
     testListenDirective(21, "conf-files/test13.conf", 8080);
+    testParse(1, "conf-files/test18.conf", "throw");
 }
