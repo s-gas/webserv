@@ -30,28 +30,25 @@ void Server::addListen(size_t port) {
 }
 
 void Server::init() {
-
   Log::setLogFile("webserv.log");
 
   _serverFd = socket(AF_INET, SOCK_STREAM, 0);
   if (_serverFd == ERROR)
     throw std::runtime_error("Socket creation failed");
 
+  int enable = 1;
+  if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == ERROR)
+    throw std::runtime_error("setsockopt() failed");
+
   _address.sin_family = AF_INET;
   _address.sin_port = htons(_port);
   _address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  if (bind(_serverFd, (struct sockaddr *)&_address, sizeof(_address)) == ERROR) {
-    close(_serverFd);
-    _serverFd = -1;
+  if (bind(_serverFd, (struct sockaddr *)&_address, sizeof(_address)) == ERROR)
     throw std::runtime_error("Bind failed");
-  }
 
-  if (listen(_serverFd, 10) == ERROR) {
-    close(_serverFd);
-    _serverFd = -1;
+  if (listen(_serverFd, 10) == ERROR)
     throw std::runtime_error("Listen failed");
-  }
 
   LOG_INFO << "Server is listening on port " << _port;
 }
