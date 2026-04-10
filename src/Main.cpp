@@ -3,8 +3,16 @@
 #include "defines.hpp"
 #include <fcntl.h>
 #include <sys/epoll.h>
+#include <unistd.h>
 
-Main::Main() : Block(MAIN) {}
+Main::Main() : Block(MAIN), _epollFd(-1) {}
+
+Main::~Main() {
+  if (_epollFd != -1) {
+    LOG_INFO << "Closing _epollFd";
+    close(_epollFd);
+  }
+}
 
 void Main::addChild(Block &block) { server = static_cast<Server &>(block); }
 
@@ -47,13 +55,17 @@ void Main::handleNewConnections() {
                       &clientAddrLen);
     if (clientFd < 0)
       break;
-    if (fcntl(clientFd, F_SETFL, O_NONBLOCK) == ERROR)
+    if (fcntl(clientFd, F_SETFL, O_NONBLOCK) == ERROR) {
       LOG_ERROR << "fcntl() on client failed";
+      close(clientFd);
+    }
     LOG_INFO << "New client connected on FD: " << clientFd;
     clientEvent.events = EPOLLIN;
     clientEvent.data.fd = clientFd;
-    if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientFd, &clientEvent) == ERROR)
+    if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientFd, &clientEvent) == ERROR) {
       LOG_ERROR << "epoll_ctl() on client failed";
+      close(clientFd);
+    }
   }
 }
 

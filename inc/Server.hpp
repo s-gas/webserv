@@ -56,17 +56,20 @@ public:
 class Main: public Block {
 public:
     Server server;
-    int _epollFd;
-    struct epoll_event _event;
-    struct epoll_event _events[MAX_EVENTS];
 
     Main();
+    ~Main();
 
     void handleNewConnections();
     void handleClientData(int i);
     void run();
     void addChild(Block &block);
     void addListen(size_t port);
+
+private:
+    int _epollFd;
+    struct epoll_event _event;
+    struct epoll_event _events[MAX_EVENTS];
 };
 
 #endif
