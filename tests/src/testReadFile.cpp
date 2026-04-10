@@ -1,7 +1,7 @@
 #include <iostream>
 #include <exception>
 #include "tests.hpp"
-#include "parse.hpp"
+#include "parseConfig.hpp"
 
 int testReadFile(int N, std::string argument, std::string string) {
     std::string failure = std::string("readFile()  -->  ") + RED + "FAIL" + RESET;

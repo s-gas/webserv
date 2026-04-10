@@ -5,7 +5,7 @@
 #include <cctype>
 #include <cstdlib>
 #include "Server.hpp"
-#include "parse.hpp"
+#include "parseConfig.hpp"
 
 bool isClosing(std::string line) {
     size_t pos = line.find("}");
@@ -55,7 +55,7 @@ void parseDirective(std::string &line, Block &block) {
         if (port <= 0 || port > 65536) {
             throw std::runtime_error("Invalid port number");
         }
-        block.addListen(port);   
+        block.addListen(port);
     }
 }
 
@@ -97,7 +97,7 @@ void parseDirectives(Block &block, std::ifstream &file, int level, int &numBrace
     }
 }
 
-void parse(Block &block, std::ifstream &file) {
+void parseConfig(Block &block, std::ifstream &file) {
     int numBraces = 0;
     bool hasServer = false;
     parseDirectives(block, file, 0, numBraces, hasServer);

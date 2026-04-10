@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
   try {
     checkExtension(fileName);
     readFile(configFile, fileName);
-    parse(main, configFile);
+    parseConfig(main, configFile);
     main.server.init();
     main.run();
   } catch (const std::exception &e) {

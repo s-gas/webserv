@@ -10,8 +10,8 @@ TEST_SRCS   =   tests.cpp \
 				testReadFile.cpp
 
 DEP_SRCS    =   checkExtension.cpp \
-                parseDirectives.cpp \
-				parseUtils.cpp \
+                parseConfig.cpp \
+				parseConfigUtils.cpp \
 				readFile.cpp \
 				Block.cpp \
 				Config.cpp \
