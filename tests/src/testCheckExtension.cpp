@@ -3,7 +3,7 @@
 #include "tests.hpp"
 #include "parse.hpp"
 
-void testCheckExtension(int N, std::string argument, std::string string) {
+int testCheckExtension(int N, std::string argument, std::string string) {
     std::string failure = "checkExtension(\"" + argument + "\")  -->  " + RED + "FAIL" + RESET;
     std::string success = "checkExtension(\"" + argument + "\")  -->  " + GREEN + "SUCCESS" + RESET;
     std::string pass;

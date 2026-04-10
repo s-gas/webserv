@@ -3,7 +3,7 @@
 #include "tests.hpp"
 #include "parse.hpp"
 
-void testReadFile(int N, std::string argument, std::string string) {
+int testReadFile(int N, std::string argument, std::string string) {
     std::string failure = std::string("readFile()  -->  ") + RED + "FAIL" + RESET;
     std::string success = std::string("readFile()  -->  ") + GREEN + "SUCCESS" + RESET;
     std::string pass;

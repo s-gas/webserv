@@ -6,7 +6,7 @@ std::ofstream Log::_fileStream;
 
 // public ----------------------------------------------------------------------
 
-Log::Log(logLevel level) : _level(level) {}
+Log::Log(LogLevel level) : _level(level) {}
 
 Log::~Log() {
   try {
@@ -25,7 +25,7 @@ void Log::setLogFile(const std::string &filename) {
 
 // private ---------------------------------------------------------------------
 
-void Log::log(logLevel level, const std::string &msg) {
+void Log::log(LogLevel level, const std::string &msg) {
   std::string label;
   std::string color;
   std::ostream &outStream = (level == ERROR) ? std::cerr : std::cout;
