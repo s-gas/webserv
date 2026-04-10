@@ -1,6 +1,6 @@
 #include "signal.hpp"
 
-volatile sig_atomic_t SignalState::serverRunning = 1;
+volatile std::sig_atomic_t SignalState::serverRunning = 1;
 
 void signalHandler(int sig) {
   if (sig == SIGINT || sig == SIGTERM) {

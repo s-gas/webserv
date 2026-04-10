@@ -30,7 +30,7 @@ void Config::run() {
   if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, server._serverFd, &_event) == ERROR)
     throw std::runtime_error("epoll_ctl() failed");
   // Event-Loop
-  while (true) {
+  while (SignalState::serverRunning) {
     event_count = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
     if (event_count == ERROR)
       throw std::runtime_error("epoll_wait() failed");
@@ -51,7 +51,7 @@ void Config::handleNewConnections() {
   socklen_t clientAddrLen = sizeof(clientAddr);
   int clientFd;
 
-  while (SignalState::serverRunning) {
+  while (true) {
     clientFd = accept(server._serverFd, (struct sockaddr *)&clientAddr,
                       &clientAddrLen);
     if (clientFd < 0)
