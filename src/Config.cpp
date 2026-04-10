@@ -14,7 +14,7 @@ Config::~Config() {
   }
 }
 
-void Config::addChild(Server &server) { server = server; }
+void Config::addChild(Server &server) { this->server = server; }
 
 void Config::run() {
   int event_count;
