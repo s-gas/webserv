@@ -53,12 +53,12 @@ public:
     void addListen(size_t port);
 };
 
-class Main: public Block {
+class Config: public Block {
 public:
     Server server;
 
-    Main();
-    ~Main();
+    Config();
+    ~Config();
 
     void handleNewConnections();
     void handleClientData(int i);

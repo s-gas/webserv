@@ -18,7 +18,7 @@ INC_DIR		= inc
 # Source files
 SRC_FILES	= $(addsuffix .cpp, main \
 								Block \
-								Main \
+								Config \
 								Server \
 								Location \
 								Log \

@@ -5,20 +5,20 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-Main::Main() : Block(MAIN), _epollFd(-1) {}
+Config::Config() : Block(MAIN), _epollFd(-1) {}
 
-Main::~Main() {
+Config::~Config() {
   if (_epollFd != -1) {
     LOG_INFO << "Closing _epollFd";
     close(_epollFd);
   }
 }
 
-void Main::addChild(Block &block) { server = static_cast<Server &>(block); }
+void Config::addChild(Block &block) { server = static_cast<Server &>(block); }
 
-void Main::addListen(size_t port) { (void)port; }
+void Config::addListen(size_t port) { (void)port; }
 
-void Main::run() {
+void Config::run() {
   int event_count;
 
   _epollFd = epoll_create(1);
@@ -44,7 +44,7 @@ void Main::run() {
   close(server._serverFd);
 }
 
-void Main::handleNewConnections() {
+void Config::handleNewConnections() {
   struct sockaddr_in clientAddr;
   struct epoll_event clientEvent;
   socklen_t clientAddrLen = sizeof(clientAddr);
@@ -69,7 +69,7 @@ void Main::handleNewConnections() {
   }
 }
 
-void Main::handleClientData(int i) {
+void Config::handleClientData(int i) {
   int clientFd = _events[i].data.fd;
   char buffer[1024] = {0};
   int bytesRead = read(clientFd, buffer, sizeof(buffer));

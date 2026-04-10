@@ -14,7 +14,7 @@ DEP_SRCS    =   checkExtension.cpp \
 				parseUtils.cpp \
 				readFile.cpp \
 				Block.cpp \
-				Main.cpp \
+				Config.cpp \
 				Server.cpp \
 				Location.cpp \
 				Log.cpp

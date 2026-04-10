@@ -17,7 +17,7 @@ int testParse(int N, std::string argument, std::string string) {
         except = failure;
     }
     std::ifstream file(argument.c_str());
-    Main main;
+    Config main;
     try {
         parse(main, file);
         std::cout << N << ": " << pass << std::endl;
@@ -41,7 +41,7 @@ int testParseDirectives(int N, std::string argument, std::string string) {
         except = failure;
     }
     std::ifstream file(argument.c_str());
-    Main main;
+    Config main;
     int numBraces = 0;
     bool hasServer = false;
     try {
@@ -58,7 +58,7 @@ int testEndpoints(int N, std::string argument, std::string *endpoints, size_t le
     std::string failure = std::string("parseDirectives()  -->  ") + RED + "FAIL" + RESET;
     std::string success = std::string("parseDirectives()  -->  ") + GREEN + "SUCCESS" + RESET;
     std::ifstream file(argument.c_str());
-    Main main;
+    Config main;
     int numBraces = 0;
     bool hasServer = false;
     try {
@@ -86,7 +86,7 @@ int testListenDirective(int N, std::string argument, size_t port) {
     std::string failure = std::string("parseDirectives()  -->  ") + RED + "FAIL" + RESET;
     std::string success = std::string("parseDirectives()  -->  ") + GREEN + "SUCCESS" + RESET;
     std::ifstream file(argument.c_str());
-    Main main;
+    Config main;
     int numBraces = 0;
     bool hasServer = false;
     try {

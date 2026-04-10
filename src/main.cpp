@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
   }
   std::ifstream configFile;
   std::string fileName = argv[1];
-  Main main;
+  Config main;
   try {
     checkExtension(fileName);
     readFile(configFile, fileName);
