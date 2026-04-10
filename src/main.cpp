@@ -21,8 +21,10 @@ int main(int argc, char *argv[]) {
     main.server.init();
     main.run();
   } catch (const std::exception &e) {
-    LOG_ERROR << e.what();
-    return FAILURE;
+    if (SignalState::serverRunning == 1) {
+      LOG_ERROR << e.what();
+      return FAILURE;
+    }
   }
   return SUCCESS;
 }
