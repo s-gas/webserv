@@ -1,6 +1,7 @@
 #include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
+#include "signal.hpp"
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -50,7 +51,7 @@ void Config::handleNewConnections() {
   socklen_t clientAddrLen = sizeof(clientAddr);
   int clientFd;
 
-  while (true) {
+  while (SignalState::serverRunning) {
     clientFd = accept(server._serverFd, (struct sockaddr *)&clientAddr,
                       &clientAddrLen);
     if (clientFd < 0)
