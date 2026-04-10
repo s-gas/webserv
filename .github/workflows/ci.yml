@@ -1,0 +1,55 @@
+name: Webserv CI/CD
+
+# Trigger workflow
+on:
+  push:
+    branches: [ "main", "epoll-implementation" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Compile Main Project
+      run: make
+
+    - name: Compile Unit Tests
+      run: |
+        cd tests
+        make
+
+    - name: Run Unit Tests
+      run: |
+        cd tests
+        ./tester
+
+    - name: Run Integration Test
+      run: |
+        # create dummy config
+        echo "server {
+        }" > default.conf
+
+        # start server
+        ./webserv default.conf & SERVER_PID=$!
+
+        # setup-time
+        sleep 1
+
+        # curl-test
+        RESPONSE=$(curl -s http://localhost:8080/)
+
+        # shut-down server
+        kill $SERVER_PID
+
+        # check response
+        if [[ "$RESPONSE" !=  *"Hello from epoll"* ]]; then
+          echo "Intergration Test Failed: Unexpected response -> $RESPONSE"
+          exit 1
+        fi
+
+        echo "Integration Test Passed!"

@@ -11,10 +11,12 @@
 #define LOG_DEBUG Log(Log::DEBUG)
 #define LOG_INFO Log(Log::INFO)
 
+#define MAX_EVENTS 32
+
 // Constants
 const int PORT = 8080;
 
 // Enums
-enum status { SUCCESS = 0, FAILURE = 1, ERROR = -1 };
+enum Status { SUCCESS = 0, FAILURE = 1, ERROR = -1 };
 
 #endif

@@ -9,9 +9,9 @@
 class Log {
 
 public:
-  enum logLevel { DEBUG, ERROR, INFO };
+  enum LogLevel { DEBUG, ERROR, INFO };
 
-  Log(logLevel);
+  Log(LogLevel);
   ~Log();
 
   static void setLogFile(const std::string &filename);
@@ -22,12 +22,12 @@ public:
   }
 
 private:
-  logLevel _level;
+  LogLevel _level;
   std::stringstream _ss;
 
   static std::ofstream _fileStream;
 
-  static void log(logLevel level, const std::string &msg);
+  static void log(LogLevel level, const std::string &msg);
 
   // Rest of OFC
   Log();
