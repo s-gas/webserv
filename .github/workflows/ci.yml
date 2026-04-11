@@ -30,7 +30,7 @@ jobs:
       - name: Run Integration Test
         run: |
           # start server
-          docker run -d --rm -p 8080:8080 webserv:1
+          CONTAINER_ID=$(docker run -d --rm -p 8080:8080 webserv:1)
 
           # setup-time
           sleep 1
@@ -39,7 +39,7 @@ jobs:
           RESPONSE=$(curl -s http://localhost:8080/)
 
           # shut-down server
-          kill $SERVER_PID
+          docker stop $CONTAINER_ID
 
           # check response
           if [[ "$RESPONSE" !=  *"Hello from epoll"* ]]; then
