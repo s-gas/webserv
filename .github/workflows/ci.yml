@@ -14,8 +14,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Compile Main Project
-        run: make
+      - name: Build image
+        run: docker build -t webserv:1 .
 
       - name: Compile Unit Tests
         run: |
@@ -29,12 +29,8 @@ jobs:
 
       - name: Run Integration Test
         run: |
-          # create dummy config
-          echo "server {
-          }" > default.conf
-
           # start server
-          ./webserv default.conf & SERVER_PID=$!
+          CONTAINER_ID=$(docker run -d --rm -p 8080:8080 webserv:1)
 
           # setup-time
           sleep 1
@@ -43,7 +39,7 @@ jobs:
           RESPONSE=$(curl -s http://localhost:8080/)
 
           # shut-down server
-          kill $SERVER_PID
+          docker stop $CONTAINER_ID
 
           # check response
           if [[ "$RESPONSE" !=  *"Hello from epoll"* ]]; then
