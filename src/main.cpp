@@ -1,4 +1,8 @@
-#include "webserv.hpp"
+#include "Log.hpp"
+#include "Server.hpp"
+#include "defines.hpp"
+#include "parseConfig.hpp"
+#include "signal.hpp"
 #include <iostream>
 
 int main(int argc, char *argv[]) {
@@ -6,6 +10,7 @@ int main(int argc, char *argv[]) {
     std::cerr << "Usage: ./webserv <config file>" << std::endl;
     return 1;
   }
+  setSignals();
   std::ifstream configFile;
   std::string fileName = argv[1];
   Config main;

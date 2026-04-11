@@ -1,6 +1,8 @@
 #include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
+#include "signal.hpp"
+#include <cerrno>
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -20,17 +22,26 @@ void Config::run() {
   int event_count;
 
   _epollFd = epoll_create(1);
-  if (_epollFd == ERROR)
+  if (_epollFd == ERROR) {
+    if (errno == EINTR)
+      return;
     throw std::runtime_error("epoll_create() failed");
+  }
   _event.events = EPOLLIN;
   _event.data.fd = server._serverFd;
-  if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, server._serverFd, &_event) == ERROR)
+  if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, server._serverFd, &_event) == ERROR) {
+    if (errno == EINTR)
+      return;
     throw std::runtime_error("epoll_ctl() failed");
+  }
   // Event-Loop
-  while (true) {
+  while (SignalState::serverRunning) {
     event_count = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
-    if (event_count == ERROR)
+    if (event_count == ERROR) {
+      if (errno == EINTR)
+        return;
       throw std::runtime_error("epoll_wait() failed");
+    }
     for (int i = 0; i < event_count; i++) {
       if (_events[i].data.fd == server._serverFd)
         handleNewConnections();
@@ -38,8 +49,6 @@ void Config::run() {
         handleClientData(i);
     }
   }
-  close(_epollFd);
-  close(server._serverFd);
 }
 
 void Config::handleNewConnections() {
@@ -77,10 +86,10 @@ void Config::handleClientData(int i) {
     close(clientFd);
   } else {
     LOG_INFO << "Received client data on FD " << clientFd << ":\n" << buffer;
-    std::string response =
+    const char *response =
         "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
         "17\r\n\r\nHello from epoll!";
-    write(clientFd, response.c_str(), response.length());
+    write(clientFd, response, 82);
     LOG_INFO << "Disconnecting client FD: " << clientFd;
     close(clientFd);
   }

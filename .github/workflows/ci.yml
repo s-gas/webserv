@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install Test Dependencies
+        run: sudo apt-get update && sudo apt-get install -y valgrind siege
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -48,3 +51,23 @@ jobs:
           fi
 
           echo "Integration Test Passed!"
+
+      - name: Compile undockerized for Valgrind Testing
+        run: make
+
+      - name: Run Siege Test with Valgrind
+        run: |
+          # start server using valgrind
+          valgrind --leak-check=full --error-exitcode=1 ./webserv conf-files/webserv.conf & SERVER_PID=$!
+
+          # setup-time
+          sleep 2
+
+          # siege-test
+          siege -c5 -r3 http://127.0.0.1:8080
+
+          # shut-down server
+          kill -SIGTERM $SERVER_PID
+
+          # valgrind exit code
+          wait $SERVER_PID
