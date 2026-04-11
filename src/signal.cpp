@@ -1,4 +1,6 @@
 #include "signal.hpp"
+#include <cstring>
+#include <signal.h>
 
 volatile std::sig_atomic_t SignalState::serverRunning = 1;
 
@@ -8,7 +10,14 @@ void signalHandler(int sig) {
   }
 }
 
-void setSignals(void) { 
-  std::signal(SIGTERM, signalHandler);
-  std::signal(SIGINT, signalHandler);
+void setSignals(void) {
+  struct sigaction sigInterupt;
+
+  std::memset(&sigInterupt, 0, sizeof(sigInterupt));
+  sigInterupt.sa_handler = signalHandler;
+  sigemptyset(&sigInterupt.sa_mask);
+  sigInterupt.sa_flags = 0;
+
+  sigaction(SIGINT, &sigInterupt, NULL);
+  sigaction(SIGTERM, &sigInterupt, NULL);
 }

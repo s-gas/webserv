@@ -8,7 +8,7 @@
 #define GREEN "\033[32m"
 #define CYAN "\033[36m"
 
-#define LOG_INFO_ON false
+#define LOG_INFO_ON true
 #define LOG_ERROR Log(Log::ERROR)
 #define LOG_DEBUG Log(Log::DEBUG)
 #define LOG_INFO if (!LOG_INFO_ON) {} else Log(Log::INFO)
