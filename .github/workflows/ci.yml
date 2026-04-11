@@ -52,6 +52,9 @@ jobs:
 
           echo "Integration Test Passed!"
 
+      - name: Compile undockerized for Valgrind Testing
+        run: make
+
       - name: Run Siege Test with Valgrind
         run: |
           # start server using valgrind
