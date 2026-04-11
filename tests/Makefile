@@ -17,7 +17,8 @@ DEP_SRCS    =   checkExtension.cpp \
 				Config.cpp \
 				Server.cpp \
 				Location.cpp \
-				Log.cpp
+				Log.cpp \
+				signal.cpp
 
 TEST_OBJS   =   $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(TEST_SRCS))
 DEP_OBJS    =   $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(DEP_SRCS))
