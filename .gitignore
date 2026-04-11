@@ -3,4 +3,5 @@ tests/build/
 tests/tester
 .cache/
 webserv.log
+webserv
 compile_commands.json
