@@ -65,7 +65,7 @@ jobs:
           sleep 2
 
           # siege-test
-          siege -c10 -t10s http://127.0.0.1:8080
+          siege -c10 -r5 http://127.0.0.1:8080
 
           # shut-down server
           kill -SIGTERM $SERVER_PID
