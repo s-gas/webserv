@@ -30,7 +30,7 @@ jobs:
       - name: Run Integration Test
         run: |
           # start server
-          docker run --rm -p 8080:8080 webserv:1
+          docker run -d --rm -p 8080:8080 webserv:1
 
           # setup-time
           sleep 1
