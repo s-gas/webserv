@@ -86,10 +86,10 @@ void Config::handleClientData(int i) {
     close(clientFd);
   } else {
     LOG_INFO << "Received client data on FD " << clientFd << ":\n" << buffer;
-    std::string response =
+    const char *response =
         "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
         "17\r\n\r\nHello from epoll!";
-    write(clientFd, response.c_str(), response.length());
+    write(clientFd, response, 82);
     LOG_INFO << "Disconnecting client FD: " << clientFd;
     close(clientFd);
   }
