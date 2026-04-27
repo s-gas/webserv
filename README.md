@@ -10,6 +10,12 @@ It handles multiple connections using `epoll`.
 
 `epoll` is a Linux-only system call, which means that it won't work on other operating systems. For this reason the program is containerized with Docker.
 
+## Todo list
+
+- parse HTTP request
+- serve static files
+- support CGI
+
 ## How to run
 
 Clone the repository:
