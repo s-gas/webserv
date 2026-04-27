@@ -2,7 +2,13 @@
 
 # webserv
 
-Containerized HTTP server built from scratch in C++98.
+HTTP web server built from scratch in C++98.
+
+It reads its configuration from a configuration that resembles Nginx's configuration files.
+
+It handles multiple connections using `epoll`.
+
+`epoll` is a Linux-only system call, which means that it won't work on other operating systems. For this reason the program is containerized with Docker.
 
 ## How to run
 
