@@ -8,6 +8,8 @@ COPY . .
 
 RUN make
 
+EXPOSE 8080
+
 ENTRYPOINT ["./webserv"]
 
 CMD ["conf-files/webserv.conf"]
