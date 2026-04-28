@@ -22,11 +22,6 @@ HttpRequest::HttpRequest(std::string str) : method(""), version(""), contentType
         }
         i++;
     }
-    std::cout << method << std::endl;
-    std::cout << version << std::endl;
-    std::cout << contentType << std::endl;
-    std::cout << contentLength << std::endl;
-    std::cout << body << std::endl;
 }
 
 std::vector<std::string> parseContent(std::string &line) {
