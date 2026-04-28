@@ -13,4 +13,6 @@ public:
     HttpRequest();
 };
 
+HttpRequest parseRequest(std::string &str);
+
 #endif

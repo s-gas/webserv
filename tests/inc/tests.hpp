@@ -1,6 +1,7 @@
 #ifndef TESTS_HPP
 # define TESTS_HPP
 
+#include "Http.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -15,5 +16,6 @@ int testParseDirectives(int N, std::string argument, std::string string);
 int testEndpoints(int N, std::string argument, std::string *endpoints, size_t len);
 int testListenDirective(int N, std::string argument, size_t port);
 int testGetContentLength(int N, std::string argument, size_t result);
+int testParseRequest(int N, std::string argument, HttpRequest request);
 
 #endif

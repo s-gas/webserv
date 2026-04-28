@@ -60,6 +60,23 @@ int main() {
     failures += testGetContentLength(3, "Content-Lengt: 0", 0);
     failures += testGetContentLength(4, "Content-Length: 42", 42);
 
+    // parseRequest()
+    std::string str = "GET / HTTP/1.1\r\n"
+                      "User-Agent: PostmanRuntime/7.53.0\r\n"
+                      "Accept: */*\r\n"
+                      "Postman-Token: a602d5cf-1f49-4ada-9660-85aba4d799f8\r\n"
+                      "Host: localhost:8080\r\n"
+                      "Accept-Encoding: gzip, deflate, br\r\n"
+                      "Connection: keep-alive\r\n"
+                      "\r\n";
+    HttpRequest request;
+    request.method = "GET";
+    request.version = "HTTP/1.1";
+    request.contentType = "";
+    request.contentLength = 0;
+    request.body = "";
+    failures += testParseRequest(1, str, request);
+
     if (failures > 0)
       return FAILURE;
     else
