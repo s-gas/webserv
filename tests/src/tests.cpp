@@ -99,6 +99,19 @@ int main() {
     request.body = "hello stranger";
     request.contentLength = 14;
     failures += testHttp(3, str3, request);
+    std::string str4 =  "GET / HTTP/1.1\r\n"
+                        "Content-Type: application/json\r\n"
+                        "User-Agent: PostmanRuntime/7.53.0\r\n"
+                        "Accept: */*\r\n"
+                        "Content-Length: 14\r\n"
+                        "\r\n"
+                        "hello stranger\r\n"
+                        "how are you?";
+    request.method = "GET";
+    request.contentLength = 27;
+    request.body =  "hello stranger\n"
+                    "how are you?";
+    failures += testHttp(4, str4, request);
     if (failures > 0)
       return FAILURE;
     else

@@ -2,7 +2,7 @@
 
 HttpRequest::HttpRequest() : method(""), version(""), contentType(""), contentLength(0), body("") {}
 
-HttpRequest::HttpRequest(std::string str) {
+HttpRequest::HttpRequest(std::string str) : method(""), version(""), contentType(""), contentLength(0), body("") {
     std::string line;
     std::istringstream stream(str);
     int i = 0;
@@ -22,6 +22,11 @@ HttpRequest::HttpRequest(std::string str) {
         }
         i++;
     }
+    std::cout << method << std::endl;
+    std::cout << version << std::endl;
+    std::cout << contentType << std::endl;
+    std::cout << contentLength << std::endl;
+    std::cout << body << std::endl;
 }
 
 std::vector<std::string> parseContent(std::string &line) {
@@ -35,6 +40,8 @@ std::string parseBody(std::istringstream &stream) {
     std::string line;
     std::string body = "";
     while (std::getline(stream, line)) {
+        if (line.size() > 0 && line[line.size() - 1] == '\r')
+            line.erase(line.size() - 1);
         body.append(line + "\n");
     }
     if (body.size() > 0) body.erase(body.size() - 1);
