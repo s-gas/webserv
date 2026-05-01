@@ -2,6 +2,10 @@
 
 # webserv
 
+<img src="webserv-banner.png" width="100%">
+
+## Description
+
 HTTP web server built from scratch in C++98.
 
 It reads its configuration from a configuration that resembles Nginx's configuration files.
