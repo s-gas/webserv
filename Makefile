@@ -27,7 +27,8 @@ SRC_FILES	= $(addsuffix .cpp, main \
 								parseConfigUtils \
 								readFile \
 								signal \
-				)
+								readRequest \
+								Http)
 SRCS		= $(addprefix $(SRC_DIR)/, $(SRC_FILES))
 
 # Object and Dependency files

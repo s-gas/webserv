@@ -1,11 +1,17 @@
 #include "Log.hpp"
 #include "Server.hpp"
+#include "Http.hpp"
 #include "defines.hpp"
 #include "signal.hpp"
+#include "readRequest.hpp"
+#include <algorithm>
 #include <cerrno>
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <iostream>
+
+#define BUF_SIZE 2
 
 Config::Config() : Block(MAIN), _epollFd(-1) {}
 
@@ -78,19 +84,13 @@ void Config::handleNewConnections() {
 
 void Config::handleClientData(int i) {
   int clientFd = _events[i].data.fd;
-  char buffer[1024] = {0};
-  int bytesRead = read(clientFd, buffer, sizeof(buffer));
-
-  if (bytesRead <= 0) {
-    LOG_INFO << "Zero bytes read... disconnecting client FD: " << clientFd;
-    close(clientFd);
-  } else {
-    LOG_INFO << "Received client data on FD " << clientFd << ":\n" << buffer;
-    const char *response =
-        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
-        "17\r\n\r\nHello from epoll!";
-    write(clientFd, response, 82);
-    LOG_INFO << "Disconnecting client FD: " << clientFd;
-    close(clientFd);
-  }
+  std::string requestString = readRequest(clientFd);
+  HttpRequest request(requestString);
+  const char *response =
+      "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
+      "17\r\n\r\nHello from epoll!";
+  write(clientFd, response, 82);
+  LOG_INFO << "Disconnecting client FD: " << clientFd;
+  close(clientFd);
+  close(clientFd);
 }
