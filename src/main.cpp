@@ -18,8 +18,9 @@ int main(int argc, char *argv[]) {
     checkExtension(fileName);
     readFile(configFile, fileName);
     parseConfig(main, configFile);
-    main.server.init();
-    main.run();
+    if (main.init() == SUCCESS) {
+      main.run();
+    }
   } catch (const std::exception &e) {
     LOG_ERROR << e.what();
     return FAILURE;
