@@ -144,6 +144,15 @@ int main() {
     request.body =  "hello stranger\n"
                     "how are you?";
     failures += testHttp(4, str4, request);
+
+    // isHeaderField()
+    failures += testIsHeaderField(1, "content-length: ", "Content-Length: 50", true);
+    failures += testIsHeaderField(2, "content-lengt: ", "Content-Length: 50", false);
+    failures += testIsHeaderField(3, "content-LENGTH: ", "CONTENT-Length: 50", true);
+    failures += testIsHeaderField(4, "content-type: ", "CONTENT-TYPE: application/json", true);
+    failures += testIsHeaderField(5, "CONTENT-TYPE: ", "content-TYPE: application/json", true);
+    failures += testIsHeaderField(6, "CONTENT-TYPE= ", "content-TYPE: application/json", false);
+
     if (failures > 0) {
       std::cout << "\n\nTOTAL FAILURES: " << failures << std::endl;
       return FAILURE;

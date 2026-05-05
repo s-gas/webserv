@@ -4,8 +4,9 @@
 #include <unistd.h>
 #include <cstring>
 #include "Http.hpp"
+#include "readRequest.hpp"
 
-#define BUF_SIZE 4
+#define BUF_SIZE 1024
 
 size_t getContentLength(std::string request) {
     size_t contentLength = 0;
@@ -13,7 +14,7 @@ size_t getContentLength(std::string request) {
     std::string text;
     std::istringstream stream(request);
     while (std::getline(stream, line)) {
-        if (line.find("Content-Length") != std::string::npos) {
+        if (isHeaderField("Content-Length: ", line)) {
             std::istringstream linestream(line);
             linestream >> text >> contentLength;
             break;
@@ -41,12 +42,25 @@ std::string readRequest(int fd) {
     size_t contentLength = getContentLength(request);
     size_t contentSegmentLength = request.size() - headerLength;
     if (contentLength > contentSegmentLength) {
-        size_t leftover = contentLength - contentSegmentLength;
-        char bodyBuffer[leftover];
-        int bytesRead = read(fd, bodyBuffer, leftover);
-        if (bytesRead == -1) throw std::runtime_error("read() failed");
-        request.append(bodyBuffer, bytesRead);
+        int leftover = contentLength - contentSegmentLength;
+        char bodyBuffer[BUF_SIZE];
+        while (leftover > 0) {
+            int bytesRead = read(fd, bodyBuffer, std::min(leftover, BUF_SIZE));
+            if (bytesRead == -1) throw std::runtime_error("read() failed");
+            request.append(bodyBuffer, bytesRead);
+            leftover -= BUF_SIZE;
+        }
     }
     std::cout << request << std::endl;
     return request;
+}
+
+bool isHeaderField(std::string headerFile, std::string line) {
+    for (size_t i = 0; i < line.length(); i++) {
+        line[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(line[i])));
+    }
+    for (size_t i = 0; i < headerFile.length(); i++) {
+        headerFile[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(headerFile[i])));
+    }
+    return (line.find(headerFile) != std::string::npos);
 }

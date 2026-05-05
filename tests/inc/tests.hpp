@@ -17,5 +17,6 @@ int testEndpoints(int N, std::string argument, std::string *endpoints, size_t le
 int testListenDirective(int N, std::string argument, size_t port);
 int testGetContentLength(int N, std::string argument, size_t result);
 int testHttp(int N, std::string argument, HttpRequest request);
+int testIsHeaderField(int N, std::string headerFile, std::string line, bool result);
 
 #endif

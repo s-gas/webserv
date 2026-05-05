@@ -6,5 +6,6 @@
 
 std::string readRequest(int fd);
 size_t getContentLength(std::string request);
+bool isHeaderField(std::string headerFile, std::string line);
 
 #endif

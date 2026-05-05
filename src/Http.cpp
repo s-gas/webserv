@@ -1,4 +1,7 @@
 #include "Http.hpp"
+#include "readRequest.hpp"
+#include <cctype>
+#include <ctype.h>
 
 HttpRequest::HttpRequest() : method(""), version(""), contentType(""), contentLength(0), body("") {}
 
@@ -11,10 +14,10 @@ HttpRequest::HttpRequest(std::string str) : method(""), version(""), contentType
             std::vector<std::string> words = parseContent(line);
             method = words[0];
             version = words[2];
-        } else if (line.find("Content-Type: ") != std::string::npos) {
+        } else if (isHeaderField("Content-Type: ", line)) {
             std::vector<std::string> words = parseContent(line);
             contentType = words[1];
-        } else if (line.find("Content-Length: ") != std::string::npos) {
+        } else if (isHeaderField("Content-Length: ", line)) {
             std::vector<std::string> words = parseContent(line);
             std::istringstream(words[1]) >> contentLength;
         } else if (line.find("\r") == 0) {
