@@ -13,7 +13,11 @@
 
 // OCF
 
-Config::Config() : Block(MAIN), _epollFd(-1) {}
+Config::Config() : Block(MAIN), _epollFd(-1) {
+    allowedMethods.push_back("GET");
+    allowedMethods.push_back("POST");
+    allowedMethods.push_back("DELETE");
+}
 
 Config::~Config() {
   if (_epollFd != -1) {
@@ -116,10 +120,16 @@ void Config::handleClientData(int i) {
   int clientFd = _events[i].data.fd;
   std::string requestString = readRequest(clientFd);
   HttpRequest request(requestString);
-  const char *response =
-      "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
-      "17\r\n\r\nHello from epoll!";
-  write(clientFd, response, 82);
-  LOG_INFO << "Disconnecting client FD: " << clientFd;
-  close(clientFd);
+  /*
+  if (isMethodAllowed(request.method, allowedMethods) == false) {
+      respond(405);
+  } else {
+  */
+      const char *response =
+          "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
+          "17\r\n\r\nHello from epoll!";
+      write(clientFd, response, 82);
+      LOG_INFO << "Disconnecting client FD: " << clientFd;
+      close(clientFd);
+      //}
 }
