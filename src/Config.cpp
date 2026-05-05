@@ -92,5 +92,4 @@ void Config::handleClientData(int i) {
   write(clientFd, response, 82);
   LOG_INFO << "Disconnecting client FD: " << clientFd;
   close(clientFd);
-  close(clientFd);
 }
