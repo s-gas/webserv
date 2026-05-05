@@ -45,3 +45,6 @@ std::string parseBody(std::istringstream &stream) {
     if (body.size() > 0) body.erase(body.size() - 1);
     return body;
 }
+
+bool isHeaderField(std::string headerFile, std::string line) {
+}
