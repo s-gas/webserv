@@ -9,12 +9,14 @@
 // public
 
 Server::Server() : Block(SERVER) {
+  /*
   this->_port.push_back(8080);
 
   struct sockaddr_in addr;
   std::memset(&addr, 0, sizeof(addr));
   this->_addr.push_back(addr);
   this->_serverFd.push_back(-1);
+  */
 }
 
 Server::~Server() {
@@ -32,19 +34,18 @@ Server::~Server() {
 void Server::addChild(Location &location) { locations.push_back(location); }
 
 void Server::addListen(size_t port) {
-  if (_port.size() == 1) {
-    this->_port[0] = port;
-  } else {
-    this->_port.push_back(port);
+  this->_port.push_back(port);
 
-    struct sockaddr_in addr;
-    std::memset(&addr, 0, sizeof(addr));
-    this->_addr.push_back(addr);
-    this->_serverFd.push_back(-1);
-  }
+  struct sockaddr_in addr;
+  std::memset(&addr, 0, sizeof(addr));
+  this->_addr.push_back(addr);
+  this->_serverFd.push_back(-1);
 }
 
 void Server::init() {
+  if (_port.size() == 0) {
+    this->addListen(8080);
+  }
   // Loop through all ports defined for the server block
   for (size_t i = 0; i < _port.size(); ++i) {
     _serverFd[i] = socket(AF_INET, SOCK_STREAM, 0);

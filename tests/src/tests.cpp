@@ -3,7 +3,10 @@
 
 int main() {
     int failures = 0;
+
+    std::cout << "\n=== Testing Config Parsing ===" << std::endl;
     // checkExtension()
+    std::cout << "\n Testing checkExtension()" << std::endl;
     failures += testCheckExtension(1, "", "throw");
     failures += testCheckExtension(2, "wrong", "throw");
     failures += testCheckExtension(3, "text.txt", "throw");
@@ -16,11 +19,13 @@ int main() {
     failures += testCheckExtension(10, "config", "throw");
 
     // readFile()
+    std::cout << "\n Testing readFile()" << std::endl;
     failures += testReadFile(1, "conf-files/test1.conf", "pass");
     failures += testReadFile(2, "conf-files/test2.conf", "pass");
     failures += testReadFile(3, "conf-files/dontexist.conf", "throw");
 
     // parseDirectives()
+    std::cout << "\n Testing parseDirectives()" << std::endl;
     failures += testParseDirectives(1, "conf-files/test1.conf", "pass");
     failures += testParseDirectives(2, "conf-files/test2.conf", "throw");
     failures += testParseDirectives(3, "conf-files/test3.conf", "throw");
@@ -35,30 +40,57 @@ int main() {
     failures += testParseDirectives(12, "conf-files/test12.conf", "pass");
     std::string endpoints[10];
     endpoints[0] = "/";
-    failures += testEndpoints(13, "conf-files/test10.conf", endpoints, 1);
+    failures += testEndpoints(13, "conf-files/test10.conf", endpoints, 1, 0);
     endpoints[0] = "/api";
-    failures += testEndpoints(14, "conf-files/test11.conf", endpoints, 1);
+    failures += testEndpoints(14, "conf-files/test11.conf", endpoints, 1, 0);
     endpoints[0] = "/var/www/";
-    failures += testEndpoints(15, "conf-files/test12.conf", endpoints, 1);
+    failures += testEndpoints(15, "conf-files/test12.conf", endpoints, 1, 0);
     endpoints[0] = "/var/www/";
     endpoints[1] = "/";
     endpoints[2] = "/api";
-    failures += testEndpoints(16, "conf-files/test13.conf", endpoints, 3);
-    failures += testListenDirective(17, "conf-files/test14.conf", 8000);
-    failures += testParseDirectives(18, "conf-files/test15.conf", "throw");
-    failures += testParseDirectives(19, "conf-files/test16.conf", "throw");
-    failures += testParseDirectives(20, "conf-files/test17.conf", "throw");
-    failures += testListenDirective(21, "conf-files/test13.conf", 8080);
+    failures += testEndpoints(16, "conf-files/test13.conf", endpoints, 3, 0);
+    failures += testParseDirectives(17, "conf-files/test15.conf", "throw");
+    failures += testParseDirectives(18, "conf-files/test16.conf", "throw");
+    failures += testParseDirectives(19, "conf-files/test17.conf", "throw");
+
+    // multiple ports
+    std::cout << "\n Testing multiple ports" << std::endl;
+    failures += testListenDirective(20, "conf-files/test14.conf", 8000);
+    failures += testListenDirective(21, "conf-files/test14.conf", 8080);
+    failures += testListenDirective(22, "conf-files/test14.conf", 8001);
+    failures += testListenDirective(23, "conf-files/test14.conf", 6060);
+    failures += testListenDirective(24, "conf-files/test14.conf", 420);
+
+    // full parse
+    std::cout << "\n Testing full parsing" << std::endl;
     failures += testParse(1, "conf-files/test18.conf", "throw");
     failures += testParse(2, "conf-files/test19.conf", "throw");
     failures += testParse(3, "conf-files/test20.conf", "throw");
     failures += testParse(4, "conf-files/test21.conf", "throw");
 
+    // test22.conf: Multi-Server & Multi-Port Validation
+    std::cout << "\n Multi-Server & Multi-Port" << std::endl;
+    failures += testParse(1, "conf-files/test22.conf", "pass");
+    failures += testListenDirective(2, "conf-files/test22.conf", 80);
+    failures += testListenDirective(3, "conf-files/test22.conf", 8080);
+    failures += testListenDirective(4, "conf-files/test22.conf", 443);
+    std::string s0_endpoints[2];
+    std::string s1_endpoints[2];
+    s0_endpoints[0] = "/";      // Server 1
+    s0_endpoints[1] = "/api";   // Server 1
+    s1_endpoints[0] = "/";      // Server 2
+    s1_endpoints[1] = "/assets";// Server 2
+    failures += testEndpoints(5, "conf-files/test22.conf", s0_endpoints, 2, 0);
+    failures += testEndpoints(6, "conf-files/test22.conf", s1_endpoints, 2, 1);
+
     // getContentLength()
+    std::cout << "\nTesting getContentLength()" << std::endl;
     failures += testGetContentLength(1, "Content-Length: 0", 0);
     failures += testGetContentLength(2, "random", 0);
     failures += testGetContentLength(3, "Content-Lengt: 0", 0);
     failures += testGetContentLength(4, "Content-Length: 42", 42);
+
+    std::cout << "\n=== Testing HttpRequest Parsing ===" << std::endl;
 
     // parseRequest()
     std::string str = "GET / HTTP/1.1\r\n"
@@ -112,8 +144,11 @@ int main() {
     request.body =  "hello stranger\n"
                     "how are you?";
     failures += testHttp(4, str4, request);
-    if (failures > 0)
+    if (failures > 0) {
+      std::cout << "\n\nTOTAL FAILURES: " << failures << std::endl;
       return FAILURE;
-    else
+    } else {
+      std::cout << "\n\nALL TESTS PASSED!" << std::endl;
       return SUCCESS;
+    }
 }

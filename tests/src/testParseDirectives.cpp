@@ -54,7 +54,7 @@ int testParseDirectives(int N, std::string argument, std::string string) {
     }
 }
 
-int testEndpoints(int N, std::string argument, std::string *endpoints, size_t len) {
+int testEndpoints(int N, std::string argument, std::string *endpoints, size_t len, size_t server) {
     std::string failure = std::string("parseDirectives()  -->  ") + RED + "FAIL" + RESET;
     std::string success = std::string("parseDirectives()  -->  ") + GREEN + "SUCCESS" + RESET;
     std::ifstream file(argument.c_str());
@@ -67,19 +67,16 @@ int testEndpoints(int N, std::string argument, std::string *endpoints, size_t le
             std::cout << N << ": " << failure << std::endl;
             return FAILURE;
         }
-
-        for (size_t i = 0; i < main._servers.size(); ++i) {
-            if (main._servers[i].locations.size() != len) {
+        if (main._servers[server].locations.size() != len) {
+            std::cout << N << ": " << failure << std::endl;
+            return FAILURE;
+        }
+        for (size_t j = 0; j < len; j++) {
+            if (endpoints[j] != main._servers[server].locations[j].endpoint) {
                 std::cout << N << ": " << failure << std::endl;
                 return FAILURE;
             }
-            for (size_t j = 0; j < len; j++) {
-                if (endpoints[j] != main._servers[i].locations[j].endpoint) {
-                    std::cout << N << ": " << failure << std::endl;
-                    return FAILURE;
-                }
-             }
-        }
+         }
         std::cout << N << ": " << success << std::endl;
     } catch (std::exception &e) {
         std::cout << N << ": " << failure << std::endl;
