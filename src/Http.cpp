@@ -35,7 +35,7 @@ HttpResponse::HttpResponse(): version("HTTP/1.1") {
 }
 
 void HttpResponse::generateResponse(std::string status) {
-    response = version + " " + status + " " + statuses[status];
+    response = version + " " + status + " " + statuses[status] + "\r\n";
 }
 
 std::vector<std::string> parseContent(std::string &line) {

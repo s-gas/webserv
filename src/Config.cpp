@@ -75,7 +75,7 @@ void Config::run() {
       if (isServerFd(triggeredFd))
         handleNewConnections(triggeredFd);
       else
-        handleClientData(i);
+        handleClientData(triggeredFd);
     }
   }
 }
@@ -116,8 +116,7 @@ void Config::handleNewConnections(int serverFd) {
   }
 }
 
-void Config::handleClientData(int i) {
-  int clientFd = _events[i].data.fd;
+void Config::handleClientData(int clientFd) {
   std::string requestString = readRequest(clientFd);
   HttpRequest request(requestString);
   HttpResponse response;
