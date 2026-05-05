@@ -50,7 +50,6 @@ std::string readRequest(int fd) {
             leftover -= BUF_SIZE;
         }
     }
-    std::cout << request << std::endl;
     return request;
 }
 
