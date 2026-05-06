@@ -83,12 +83,16 @@ void parseDirectives(Block &block, std::ifstream &file, int level, int &numBrace
             numBraces++;
             if (isBlock(line, "server")) {
                 Server server;
+                server.root = block.root;
+                server.index = block.index;
                 parseDirectives(server, file, level + 1, numBraces, hasServer);
                 hasServer = true;
                 Config &config = static_cast<Config &>(block);
                 config.addChild(server);
             } else if (isBlock(line, "location")) {
                 Location location;
+                location.root = block.root;
+                location.index = block.index;
                 storeEndPoint(location, line);
                 parseDirectives(location, file, level + 1, numBraces, hasServer);
                 Server &server = static_cast<Server &>(block);

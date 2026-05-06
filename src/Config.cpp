@@ -11,12 +11,20 @@
 
 #define BUF_SIZE 1024
 
-Config::Config() : Block(MAIN), _epollFd(-1) {
+Config::Config() : Block(MAIN), _epollFd(-1){
 }
 
 Config::~Config() {
   if (_epollFd != -1) {
-    LOG_INFO << "Closing _epollFd";
+    LOG_INFO << "Closing _epollFd"Block::Block(enum BlockType BlockType)
+    : type(BlockType), root("www"), index("index.html") {
+        allowedMethods.insert("GET");
+        allowedMethods.insert("POST");
+        allowedMethods.insert("DELETE");
+
+        contentTypes[".html"] = "text/html";
+        contentTypes[".css"] = "text/html";
+    };
     close(_epollFd);
   }
 }
