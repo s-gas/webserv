@@ -60,8 +60,9 @@ public:
     void addChild(Server &server);
     int init();
     void run();
-    int isServerFd(int triggeredFd);
+    int isServerFd(int fd);
     void handleNewConnections(int serverFd, int serverIndex);
+    void removeClient(int fd);
 
 private:
     int _epollFd;

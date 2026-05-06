@@ -16,7 +16,7 @@ public:
 
     Client();
     Client(Server &s, int clientFd);
-    void handleData();
+    bool handleData();
 };
 
 #endif

@@ -71,20 +71,30 @@ void Config::run() {
     }
 
     for (int i = 0; i < event_count; i++) {
-      int triggeredFd = _events[i].data.fd;
-      int serverIndex = isServerFd(triggeredFd);
+      int fd = _events[i].data.fd;
+      int serverIndex = isServerFd(fd);
       if (serverIndex != -1)
-        handleNewConnections(triggeredFd, serverIndex);
-      else
-        clients[triggeredFd].handleData();
+        handleNewConnections(fd, serverIndex);
+      else if (clients[fd].handleData()) {
+        removeClient(fd);
+      }
     }
   }
 }
 
-int Config::isServerFd(int triggeredFd) {
+void Config::removeClient(int fd) {
+    if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, NULL)) {
+        LOG_ERROR << "Failed to remove FD " << fd;
+    }
+    close(clients[fd].fd);
+    clients.erase(fd);
+    LOG_INFO << "Disconnecting client FD: " << fd;
+}
+
+int Config::isServerFd(int fd) {
   for (size_t i = 0; i < _servers.size(); ++i) {
     for (size_t j = 0; j < _servers[i]._serverFd.size(); ++j) {
-      if (triggeredFd == _servers[i]._serverFd[j]) {
+      if (fd == _servers[i]._serverFd[j]) {
         return i;
       }
     }
