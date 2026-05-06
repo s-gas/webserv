@@ -23,15 +23,18 @@ public:
 class HttpResponse {
 public:
     std::map<std::string, std::string> statuses;
+    std::string status;
     std::string version;
     std::string server;
     std::string emptyLine;
+    std::string fileName;
     std::string response;
     std::ostringstream body;
 
     HttpResponse();
 
-    void generateResponse(std::string status);
+    void generate(HttpRequest &request);
+    void generateHtml(HttpRequest &request);
 };
 
 std::vector<std::string> parseContent(std::string &line);

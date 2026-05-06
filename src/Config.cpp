@@ -121,8 +121,7 @@ void Config::handleClientData(int clientFd) {
   std::cout << requestString << std::endl;
   HttpRequest request(requestString);
   HttpResponse response;
-  if (request.version != response.version) response.generateResponse("400");
-  else response.generateResponse("200");
+  response.generate(request);
   write(clientFd, response.response.c_str(), response.response.size());
   LOG_INFO << "Disconnecting client FD: " << clientFd;
   close(clientFd);
