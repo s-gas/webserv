@@ -9,6 +9,7 @@
 
 class HttpRequest {
 public:
+    std::string rawString;
     std::string method;
     std::string endpoint;
     std::string version;
@@ -27,14 +28,10 @@ public:
     std::string version;
     std::string server;
     std::string emptyLine;
-    std::string fileName;
     std::string response;
     std::string body;
 
     HttpResponse();
-
-    void generate(HttpRequest &request);
-    void generateHtml(HttpRequest &request);
 };
 
 std::vector<std::string> parseContent(std::string &line);

@@ -30,7 +30,8 @@ SRC_FILES	= $(addsuffix .cpp, main \
 								signal \
 								readRequest \
 								HttpRequest \
-								HttpResponse)
+								HttpResponse \
+								print)
 SRCS		= $(addprefix $(SRC_DIR)/, $(SRC_FILES))
 
 # Object and Dependency files

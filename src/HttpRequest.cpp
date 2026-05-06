@@ -5,7 +5,7 @@
 
 HttpRequest::HttpRequest() : method(""), version(""), contentType(""), contentLength(0), body("") {}
 
-HttpRequest::HttpRequest(std::string str) : method(""), version(""), contentType(""), contentLength(0), body("") {
+HttpRequest::HttpRequest(std::string str) : rawString(str), method(""), version(""), contentType(""), contentLength(0), body("") {
     std::string line;
     std::istringstream stream(str);
     int i = 0;

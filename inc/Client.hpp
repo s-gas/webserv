@@ -12,11 +12,14 @@ public:
     HttpRequest request;
     HttpResponse response;
     Server *server;
+
     int fd;
 
     Client();
     Client(Server &s, int clientFd);
     bool handleData();
+    void validateRequest();
+    void generateResponse();
 };
 
 #endif
