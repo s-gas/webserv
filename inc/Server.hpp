@@ -22,6 +22,9 @@ enum BlockType {
 class Block {
 public:
     std::set<std::string> allowedMethods;
+    // key: extension (.html, .css)
+    // value: content type (text/html, text/css)
+    std::map<std::string, std::string> contentTypes;
     enum BlockType type;
     std::string root;
 

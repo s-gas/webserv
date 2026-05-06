@@ -5,4 +5,7 @@ Block::Block(enum BlockType BlockType)
     allowedMethods.insert("GET");
     allowedMethods.insert("POST");
     allowedMethods.insert("DELETE");
+
+    contentTypes[".html"] = "text/html";
+    contentTypes[".css"] = "text/html";
 }
