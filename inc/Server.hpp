@@ -21,6 +21,7 @@ enum BlockType {
 
 class Block {
 public:
+    std::set<std::string> allowedMethods;
     enum BlockType type;
     std::string root;
 
@@ -41,7 +42,6 @@ public:
     std::vector<int> _serverFd;
     std::vector<struct sockaddr_in> _addr;
     std::vector<Location> locations;
-    std::set<std::string> allowedMethods;
 
     Server();
     ~Server();
@@ -54,7 +54,6 @@ public:
 class Config: public Block {
 public:
     std::vector<Server> _servers;
-    std::set<std::string> allowedMethods;
     std::map<int, Client> clients;
 
     Config();

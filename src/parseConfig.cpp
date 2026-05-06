@@ -84,7 +84,6 @@ void parseDirectives(Block &block, std::ifstream &file, int level, int &numBrace
                 parseDirectives(server, file, level + 1, numBraces, hasServer);
                 hasServer = true;
                 Config &config = static_cast<Config &>(block);
-                if (server.allowedMethods.empty()) server.allowedMethods = config.allowedMethods;
                 config.addChild(server);
             } else if (isBlock(line, "location")) {
                 Location location;

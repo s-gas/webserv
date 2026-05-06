@@ -12,9 +12,6 @@
 #define BUF_SIZE 1024
 
 Config::Config() : Block(MAIN), _epollFd(-1) {
-    allowedMethods.insert("GET");
-    allowedMethods.insert("POST");
-    allowedMethods.insert("DELETE");
 }
 
 Config::~Config() {
