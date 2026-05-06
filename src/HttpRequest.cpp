@@ -13,6 +13,7 @@ HttpRequest::HttpRequest(std::string str) : method(""), version(""), contentType
         if (i == 0) {
             std::vector<std::string> words = parseContent(line);
             method = words[0];
+            endpoint = words[1];
             version = words[2];
         } else if (isHeaderField("Content-Type: ", line)) {
             std::vector<std::string> words = parseContent(line);

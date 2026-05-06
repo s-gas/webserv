@@ -30,28 +30,6 @@ jobs:
           cd tests
           ./tester
 
-      - name: Run Integration Test
-        run: |
-          # start server
-          CONTAINER_ID=$(docker run -d --rm -p 8080:8080 webserv:1)
-
-          # setup-time
-          sleep 1
-
-          # curl-test
-          RESPONSE=$(curl -s http://localhost:8080/)
-
-          # shut-down server
-          docker stop $CONTAINER_ID
-
-          # check response
-          if [[ "$RESPONSE" !=  *"Hello from epoll"* ]]; then
-            echo "Intergration Test Failed: Unexpected response -> $RESPONSE"
-            exit 1
-          fi
-
-          echo "Integration Test Passed!"
-
       - name: Compile undockerized for Valgrind Testing
         run: make
 

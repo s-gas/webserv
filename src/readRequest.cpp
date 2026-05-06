@@ -30,8 +30,7 @@ std::string readRequest(int fd) {
     std::string emptyLine = "\r\n\r\n";
     while (true) {
         int bytesRead = read(fd, buffer, BUF_SIZE);
-        if (bytesRead == -1) throw std::runtime_error("read() failed");
-        if (bytesRead == 0) break;
+        if (bytesRead <= 0) break;
         request.append(buffer, bytesRead);
         size_t pos;
         if ((pos = request.find(emptyLine)) != std::string::npos) {
@@ -46,12 +45,11 @@ std::string readRequest(int fd) {
         char bodyBuffer[BUF_SIZE];
         while (leftover > 0) {
             int bytesRead = read(fd, bodyBuffer, std::min(leftover, BUF_SIZE));
-            if (bytesRead == -1) throw std::runtime_error("read() failed");
+            if (bytesRead <= 0) break;
             request.append(bodyBuffer, bytesRead);
             leftover -= BUF_SIZE;
         }
     }
-    std::cout << request << std::endl;
     return request;
 }
 

@@ -2,7 +2,7 @@
 
 # webserv
 
-<img src="webserv-banner.png" alt="webserv project banner" width="100%">
+<img src="assets/webserv-banner.png" alt="webserv project banner" width="100%">
 
 ## Description
 

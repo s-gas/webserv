@@ -13,7 +13,11 @@
 
 // OCF
 
-Config::Config() : Block(MAIN), _epollFd(-1) {}
+Config::Config() : Block(MAIN), _epollFd(-1) {
+    allowedMethods.push_back("GET");
+    allowedMethods.push_back("POST");
+    allowedMethods.push_back("DELETE");
+}
 
 Config::~Config() {
   if (_epollFd != -1) {
@@ -71,7 +75,7 @@ void Config::run() {
       if (isServerFd(triggeredFd))
         handleNewConnections(triggeredFd);
       else
-        handleClientData(i);
+        handleClientData(triggeredFd);
     }
   }
 }
@@ -112,14 +116,13 @@ void Config::handleNewConnections(int serverFd) {
   }
 }
 
-void Config::handleClientData(int i) {
-  int clientFd = _events[i].data.fd;
+void Config::handleClientData(int clientFd) {
   std::string requestString = readRequest(clientFd);
+  std::cout << requestString << std::endl;
   HttpRequest request(requestString);
-  const char *response =
-      "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
-      "17\r\n\r\nHello from epoll!";
-  write(clientFd, response, 82);
+  HttpResponse response;
+  response.generate(request);
+  write(clientFd, response.response.c_str(), response.response.size());
   LOG_INFO << "Disconnecting client FD: " << clientFd;
   close(clientFd);
 }

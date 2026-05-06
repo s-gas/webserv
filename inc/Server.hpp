@@ -50,6 +50,8 @@ public:
 class Config: public Block {
 public:
     std::vector<Server> _servers;
+    std::vector<std::string> allowedMethods;
+    //map
 
     Config();
     ~Config();

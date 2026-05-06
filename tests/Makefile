@@ -22,7 +22,8 @@ DEP_SRCS    =   checkExtension.cpp \
 				Log.cpp \
 				signal.cpp \
 				readRequest.cpp \
-				Http.cpp
+				HttpRequest.cpp \
+				HttpResponse.cpp
 
 TEST_OBJS   =   $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(TEST_SRCS))
 DEP_OBJS    =   $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(DEP_SRCS))
