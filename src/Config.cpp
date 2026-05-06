@@ -72,10 +72,11 @@ void Config::run() {
 
     for (int i = 0; i < event_count; i++) {
       int triggeredFd = _events[i].data.fd;
-      if (isServerFd(triggeredFd))
-        handleNewConnections(triggeredFd);
+      int serverIndex = isServerFd(triggeredFd);
+      if (serverIndex != -1)
+        handleNewConnections(triggeredFd, serverIndex);
       else
-        handleClientData(triggeredFd);
+        clients[triggeredFd].handleData();
     }
   }
 }
@@ -84,14 +85,14 @@ int Config::isServerFd(int triggeredFd) {
   for (size_t i = 0; i < _servers.size(); ++i) {
     for (size_t j = 0; j < _servers[i]._serverFd.size(); ++j) {
       if (triggeredFd == _servers[i]._serverFd[j]) {
-        return true;
+        return i;
       }
     }
   }
-  return false;
+  return -1;
 }
 
-void Config::handleNewConnections(int serverFd) {
+void Config::handleNewConnections(int serverFd, int serverIndex) {
   struct sockaddr_in clientAddr;
   struct epoll_event clientEvent;
   socklen_t clientAddrLen = sizeof(clientAddr);
@@ -101,6 +102,7 @@ void Config::handleNewConnections(int serverFd) {
     clientFd = accept(serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
     if (clientFd < 0)
       break;
+    clients[clientFd] = Client(_servers[serverIndex], clientFd);
     if (fcntl(clientFd, F_SETFL, O_NONBLOCK) == ERROR) {
       LOG_ERROR << "fcntl() on client failed";
       close(clientFd);
@@ -114,15 +116,4 @@ void Config::handleNewConnections(int serverFd) {
       close(clientFd);
     }
   }
-}
-
-void Config::handleClientData(int clientFd) {
-  std::string requestString = readRequest(clientFd);
-  std::cout << requestString << std::endl;
-  HttpRequest request(requestString);
-  HttpResponse response;
-  response.generate(request);
-  write(clientFd, response.response.c_str(), response.response.size());
-  LOG_INFO << "Disconnecting client FD: " << clientFd;
-  close(clientFd);
 }

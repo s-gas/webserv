@@ -1,6 +1,7 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+#include "Client.hpp"
 #include "defines.hpp"
 #include <cstring>
 #include <netinet/in.h>
@@ -51,7 +52,7 @@ class Config: public Block {
 public:
     std::vector<Server> _servers;
     std::vector<std::string> allowedMethods;
-    //map
+    std::map<int, Client> clients;
 
     Config();
     ~Config();
@@ -60,8 +61,7 @@ public:
     int init();
     void run();
     int isServerFd(int triggeredFd);
-    void handleNewConnections(int triggeredFd);
-    void handleClientData(int i);
+    void handleNewConnections(int serverFd, int serverIndex);
 
 private:
     int _epollFd;

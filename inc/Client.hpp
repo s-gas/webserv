@@ -2,15 +2,21 @@
 # define CLIENT_HPP
 
 #include "Http.hpp"
-#include "Server.hpp"
 #include <map>
 
+class Server;
+
 class Client {
+
+public:
     HttpRequest request;
     HttpResponse response;
-    Server &server;
+    Server *server;
+    int fd;
 
-    Client(Server &server);
+    Client();
+    Client(Server &s, int clientFd);
+    void handleData();
 };
 
 #endif

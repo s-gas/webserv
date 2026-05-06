@@ -20,6 +20,7 @@ SRC_FILES	= $(addsuffix .cpp, main \
 								Block \
 								Config \
 								Server \
+								Client \
 								Location \
 								Log \
 								checkExtension \
