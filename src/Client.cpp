@@ -39,9 +39,9 @@ void Client::generateResponse() {
     ss << "Server: " << response.server;
     std::string fileName;
     if (request.endpoint == "/") {
-        fileName = std::string("www/") + "index" + ".html";
+        fileName = server->root + "index" + ".html";
     } else {
-        fileName = std::string("www/") + response.status + ".html";
+        fileName = server->root + response.status + ".html";
     }
     std::ifstream file(fileName.c_str());
     if (file) {
