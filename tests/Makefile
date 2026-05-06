@@ -18,6 +18,7 @@ DEP_SRCS    =   checkExtension.cpp \
 				Block.cpp \
 				Config.cpp \
 				Server.cpp \
+				Client.cpp \
 				Location.cpp \
 				Log.cpp \
 				signal.cpp \

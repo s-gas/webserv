@@ -31,11 +31,20 @@ void HttpResponse::generateHtml(HttpRequest &request) {
     } else {
         fileName = std::string("www/") + status + ".html";
     }
-    ss << "Content-Type: " << "text/html" << "\r\n";
     std::ifstream file(fileName.c_str());
-    body << file.rdbuf();
-    ss << "Content-Length: " << body.str().size() << "\r\n";
+    if (file) {
+        // .assign read an entire file into a string
+        body.assign((std::istreambuf_iterator<char>(file)),
+                    std::istreambuf_iterator<char>());
+        file.close();
+    } else {
+      //fallback
+      body = "<html><body><h1>" + status + " " + statuses[status] +
+      "</h1></body><html>";
+    }
+    ss << "Content-Type: " << "text/html" << "\r\n";
+    ss << "Content-Length: " << body.size() << "\r\n";
     ss << emptyLine;
-    ss << body.str();
+    ss << body;
     response = ss.str();
 }

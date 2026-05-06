@@ -29,7 +29,7 @@ public:
     std::string emptyLine;
     std::string fileName;
     std::string response;
-    std::ostringstream body;
+    std::string body;
 
     HttpResponse();
 

@@ -71,27 +71,38 @@ void Config::run() {
     }
 
     for (int i = 0; i < event_count; i++) {
-      int triggeredFd = _events[i].data.fd;
-      if (isServerFd(triggeredFd))
-        handleNewConnections(triggeredFd);
-      else
-        handleClientData(triggeredFd);
-    }
-  }
-}
-
-int Config::isServerFd(int triggeredFd) {
-  for (size_t i = 0; i < _servers.size(); ++i) {
-    for (size_t j = 0; j < _servers[i]._serverFd.size(); ++j) {
-      if (triggeredFd == _servers[i]._serverFd[j]) {
-        return true;
+      int fd = _events[i].data.fd;
+      int serverIndex = isServerFd(fd);
+      if (serverIndex != -1)
+        handleNewConnections(fd, serverIndex);
+      else if (clients[fd].handleData()) {
+        removeClient(fd);
       }
     }
   }
-  return false;
 }
 
-void Config::handleNewConnections(int serverFd) {
+void Config::removeClient(int fd) {
+    if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, NULL)) {
+        LOG_ERROR << "Failed to remove FD " << fd;
+    }
+    close(clients[fd].fd);
+    clients.erase(fd);
+    LOG_INFO << "Disconnecting client FD: " << fd;
+}
+
+int Config::isServerFd(int fd) {
+  for (size_t i = 0; i < _servers.size(); ++i) {
+    for (size_t j = 0; j < _servers[i]._serverFd.size(); ++j) {
+      if (fd == _servers[i]._serverFd[j]) {
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
+void Config::handleNewConnections(int serverFd, int serverIndex) {
   struct sockaddr_in clientAddr;
   struct epoll_event clientEvent;
   socklen_t clientAddrLen = sizeof(clientAddr);
@@ -101,6 +112,7 @@ void Config::handleNewConnections(int serverFd) {
     clientFd = accept(serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
     if (clientFd < 0)
       break;
+    clients[clientFd] = Client(_servers[serverIndex], clientFd);
     if (fcntl(clientFd, F_SETFL, O_NONBLOCK) == ERROR) {
       LOG_ERROR << "fcntl() on client failed";
       close(clientFd);
@@ -114,15 +126,4 @@ void Config::handleNewConnections(int serverFd) {
       close(clientFd);
     }
   }
-}
-
-void Config::handleClientData(int clientFd) {
-  std::string requestString = readRequest(clientFd);
-  std::cout << requestString << std::endl;
-  HttpRequest request(requestString);
-  HttpResponse response;
-  response.generate(request);
-  write(clientFd, response.response.c_str(), response.response.size());
-  LOG_INFO << "Disconnecting client FD: " << clientFd;
-  close(clientFd);
 }
