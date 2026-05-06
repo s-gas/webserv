@@ -17,8 +17,8 @@ public:
     Client();
     Client(Server &s, int clientFd);
     bool handleData();
-    void validateRequest();
-    void generateResponse();
+    void serveFile();
+    void getResponseStatus();
     bool isMethodAllowed();
     int isEndpoint();
 };

@@ -13,15 +13,16 @@ bool Client::handleData() {
   std::string requestString = readRequest(fd);
   request = HttpRequest(requestString);
   printRequest(request.rawString);
-  validateRequest();
-  generateResponse();
+  if (request.method == "GET") {
+      serveFile();
+  }
   printResponse(response.response);
   write(fd, response.response.c_str(), response.response.size());
   // return true when this Client is done
   return true;
 }
 
-void Client::validateRequest() {
+void Client::getResponseStatus() {
     if (request.version != response.version) {
         response.status = "400";
     } else if (isMethodAllowed() == false) {
@@ -33,7 +34,8 @@ void Client::validateRequest() {
     }
 }
 
-void Client::generateResponse() {
+void Client::serveFile() {
+    getResponseStatus();
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
     ss << "Server: " << response.server;
