@@ -11,12 +11,10 @@
 
 #define BUF_SIZE 1024
 
-// OCF
-
 Config::Config() : Block(MAIN), _epollFd(-1) {
-    allowedMethods.push_back("GET");
-    allowedMethods.push_back("POST");
-    allowedMethods.push_back("DELETE");
+    allowedMethods.insert("GET");
+    allowedMethods.insert("POST");
+    allowedMethods.insert("DELETE");
 }
 
 Config::~Config() {

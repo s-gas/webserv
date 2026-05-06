@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <set>
+#include <map>
 #include <sys/epoll.h>
 
 enum BlockType {
@@ -39,6 +41,7 @@ public:
     std::vector<int> _serverFd;
     std::vector<struct sockaddr_in> _addr;
     std::vector<Location> locations;
+    std::set<std::string> allowedMethods;
 
     Server();
     ~Server();
@@ -51,7 +54,7 @@ public:
 class Config: public Block {
 public:
     std::vector<Server> _servers;
-    std::vector<std::string> allowedMethods;
+    std::set<std::string> allowedMethods;
     std::map<int, Client> clients;
 
     Config();

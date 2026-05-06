@@ -24,6 +24,8 @@ bool Client::handleData() {
 void Client::validateRequest() {
     if (request.version != response.version) {
         response.status = "400";
+    } else if (isMethodAllowed() == false) {
+        response.status = "405";
     } else if (request.endpoint == "/") {
         response.status = "200";
     } else {
