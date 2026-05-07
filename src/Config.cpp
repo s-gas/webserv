@@ -11,24 +11,14 @@
 
 #define BUF_SIZE 1024
 
-Config::Config() : Block(MAIN), _epollFd(-1){
-}
+Config::Config() : Block(MAIN), _epollFd(-1){}
 
 Config::~Config() {
   if (_epollFd != -1) {
-    LOG_INFO << "Closing _epollFd"Block::Block(enum BlockType BlockType)
-    : type(BlockType), root("www"), index("index.html") {
-        allowedMethods.insert("GET");
-        allowedMethods.insert("POST");
-        allowedMethods.insert("DELETE");
-
-        contentTypes[".html"] = "text/html";
-        contentTypes[".css"] = "text/html";
-    };
+    LOG_INFO << "Closing _epollFd";
     close(_epollFd);
   }
 }
-
 // Methods
 
 void Config::addChild(Server &server) { this->_servers.push_back(server); }
