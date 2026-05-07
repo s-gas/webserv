@@ -36,7 +36,7 @@ public:
 };
 
 std::vector<std::string> parseContent(std::string &line);
+std::string normalize(std::string str);
 std::string parseBody(std::istringstream &stream);
-
 
 #endif

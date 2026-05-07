@@ -56,16 +56,21 @@ There are two types of directives:
   Can be defined only in `server`. Between the name and the opening curly brace, an endpoint must be specified:
 
   ```conf
-  location /about {
+  location /about/ {
   }
   ```
 
-  In this example, `/about` is the endpoint of the `location` block directive.
+  In this example, `/about/` is the endpoint of the `location` block directive.
 
+  In order to be valid, the location must include a trailing `/`:
+
+  - `location /about`  -> Invalid
+  - `location /about/` -> Valid
+  
   **Fallback location**: if `location /` is defined, it acts as fallback, which means that if a request endpoint does not match any other `location` block, the server will default to the `location /` block.
 
   ```conf
-  location /about {
+  location /about/ {
   }
 
   location / {
@@ -73,10 +78,10 @@ There are two types of directives:
   ```
 
   With the above configuration:
-  - `http://<hostname>/home`  -> `location /` block
-  - `http://<hostname>/about` -> `location /about` block
+  - `http://<hostname>/home`   -> `location /` block
+  - `http://<hostname>/about/` -> `location /about/` block
 
-In order to be valid, the closing curly brace must be in a different line than the opening curly brace.
+In order to be valid, the closing curly brace of a block directive must be in a different line than the opening curly brace.
 
 This is invalid:
 
@@ -136,7 +141,17 @@ server {
 }
 ```
 
-This will start the server with a single `server` block listening at port `1024`. `root` is set to `www` and `index` to `index.html`. The fallback 'location /' allows the server to handle requests with any endpoint.
+This will start the server with a single `server` block listening at port `1024`. `root` is set to `www` and `index` to `index.html`. The fallback `location /` allows the server to handle requests with any `endpoint`, which will be appended to `root`.
+
+**Formula**: `root` + `endpoint` + `index`.
+
+Some examples:
+
+| Request                       | File served           |
+|-------------------------------|-----------------------|
+| `http://localhost:1024`       | `www/index.html`      |
+| `http://localhost:1024/about/`| `www/about/index.html`|
+
 
 ## How to run
 

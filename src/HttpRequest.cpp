@@ -13,7 +13,7 @@ HttpRequest::HttpRequest(std::string str) : rawString(str), method(""), version(
         if (i == 0) {
             std::vector<std::string> words = parseContent(line);
             method = words[0];
-            endpoint = words[1];
+            endpoint = normalize(words[1]);
             version = words[2];
         } else if (isHeaderField("Content-Type: ", line)) {
             std::vector<std::string> words = parseContent(line);
@@ -33,6 +33,10 @@ std::vector<std::string> parseContent(std::string &line) {
     std::vector<std::string> words(3);
     linestream >> words[0] >> words[1] >> words[2];
     return words;
+}
+
+std::string normalize(std::string str) {
+    return str.size() == 0 || str[str.size() - 1] == '/' ? str : str + '/';
 }
 
 std::string parseBody(std::istringstream &stream) {
