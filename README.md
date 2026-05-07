@@ -22,7 +22,9 @@ It handles multiple connections using `epoll`.
 
 The server requires a configuration file with extension `.conf` in order to run.
 
-Its structure is inspired by **nginx** configuration file and defines the directives, which can be of two types:
+Its structure is inspired by **nginx** configuration file and defines the directives, which are instructions that tell the server how to handle incoming requests.
+
+There are two types of directives:
 
 - **block directive**: consists of a name and set of instructions surrounded my curly braces:
 
@@ -54,11 +56,25 @@ Its structure is inspired by **nginx** configuration file and defines the direct
   Can be defined only in `server`. Between the name and the opening curly brace, an endpoint must be specified:
 
   ```conf
+  location /about {
+  }
+  ```
+
+  In this example, `/about` is the endpoint of the `location` block directive.
+
+  **Fallback location**: if `location /` is defined, it acts as fallback, which means that if a request endpoint does not match any other `location` block, the server will default to the `location /` block.
+
+  ```conf
+  location /about {
+  }
+
   location / {
   }
   ```
 
-  In this example, `/` is the endpoint of the `location` block directive.
+  With the above configuration:
+  - `http://<hostname>/home`  -> `location /` block
+  - `http://<hostname>/about` -> `location /about` block
 
 In order to be valid, the closing curly brace must be in a different line than the opening curly brace.
 
@@ -109,7 +125,7 @@ server {
 
 ### Simple web server
 
-The configuration file of a simple web server would like this:
+The configuration file of a simple web server would look like this:
 
 ```conf
 server {
@@ -120,7 +136,7 @@ server {
 }
 ```
 
-This will start the server with a single `server` block listening at port `1024`. `root` is set to `www` and `index` to `index.html`.
+This will start the server with a single `server` block listening at port `1024`. `root` is set to `www` and `index` to `index.html`. The fallback 'location /' allows the server to handle requests with any endpoint.
 
 ## How to run
 
