@@ -55,10 +55,12 @@ bool Client::isMethodAllowed() {
 }
 
 int Client::isEndpoint() {
+    int fallback = -1;
     for (size_t i = 0; i < server->locations.size(); i++) {
         if (request.endpoint == server->locations[i].endpoint) return i;
+        if (server->locations[i].endpoint == "/") fallback = i;
     }
-    return -1;
+    return i;
 }
 
 void Client::writeBody() {
