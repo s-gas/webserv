@@ -57,17 +57,27 @@ bool Client::isMethodAllowed() {
 int Client::isEndpoint() {
     int fallback = -1;
     for (size_t i = 0; i < server->locations.size(); i++) {
-        if (request.endpoint == server->locations[i].endpoint) return i;
-        if (server->locations[i].endpoint == "/") fallback = i;
+        if (request.endpoint == server->locations[i].endpoint) {
+            std::cout << "endpoint found: " << request.endpoint << std::endl;
+            return i;
+        }
+        if (server->locations[i].endpoint == "/") {
+            fallback = i;
+            std::cout << "fallback" << std::endl;
+        }
     }
-    return i;
+    return fallback;
 }
 
 void Client::writeBody() {
     std::string fileName;
     if (locationIndex != -1) {
         Location location = server->locations[locationIndex];
-        fileName = location.root + "/" + location.index;
+        if (location.endpoint == "/") {
+            fileName = location.root + request.endpoint + location.index;
+        } else {
+            fileName = location.root + location.endpoint + location.index;
+        }
         std::ifstream file(fileName.c_str());
         if (file) {
             response.body.assign((std::istreambuf_iterator<char>(file)),
