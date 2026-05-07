@@ -18,9 +18,11 @@ public:
     Client(Server &s, int clientFd);
     bool handleData();
     void serveFile();
-    void getResponseStatus();
+    void getStatus();
     bool isMethodAllowed();
     int isEndpoint();
+    void writeBody();
+    void writeError();
 };
 
 #endif

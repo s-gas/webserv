@@ -22,27 +22,12 @@ bool Client::handleData() {
   return true;
 }
 
-
 void Client::serveFile() {
-    getResponseStatus();
+    getStatus();
+    writeBody();
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
     ss << "Server: " << response.server;
-    std::string fileName;
-    if (response.status >= "400") {
-        fileName = server->root + "/" + response.status + ".html";
-    } else if (locationIndex != -1) {
-        Location location = server->locations[locationIndex];
-        fileName = location.root + "/" + location.index;
-    } else {
-        fileName = server->root + "/" + server->index;
-    }
-    std::ifstream file(fileName.c_str());
-    if (file) {
-        response.body.assign((std::istreambuf_iterator<char>(file)),
-                    std::istreambuf_iterator<char>());
-        file.close();
-    }
     ss << "Content-Type: " << "text/html" << "\r\n";
     ss << "Content-Length: " << response.body.size() << "\r\n";
     ss << response.emptyLine;
@@ -50,18 +35,20 @@ void Client::serveFile() {
     response.response = ss.str();
 }
 
-void Client::getResponseStatus() {
+void Client::getStatus() {
     if (request.version != response.version) {
         response.status = "400";
+        response.error = true;
     } else if (isMethodAllowed() == false) {
         response.status = "405";
+        response.error = true;
     } else if ((locationIndex = isEndpoint()) != -1) {
         response.status = "200";
     } else {
         response.status = "404";
+        response.error = true;
     }
 }
-
 
 bool Client::isMethodAllowed() {
     return server->allowedMethods.find(request.method) != server->allowedMethods.end();
@@ -72,4 +59,33 @@ int Client::isEndpoint() {
         if (request.endpoint == server->locations[i].endpoint) return i;
     }
     return -1;
+}
+
+void Client::writeBody() {
+    std::string fileName;
+    if (locationIndex != -1) {
+        Location location = server->locations[locationIndex];
+        fileName = location.root + "/" + location.index;
+        std::ifstream file(fileName.c_str());
+        if (file) {
+            response.body.assign((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
+            file.close();
+        } else {
+            response.status = "404";
+            response.error = true;
+        }
+    }
+    if (response.error == true) writeError();
+}
+
+void Client::writeError() {
+    std::string fileName;
+    fileName = server->errorsRoot + "/" + response.status + ".html";
+    std::ifstream file(fileName.c_str());
+    if (file) {
+        response.body.assign((std::istreambuf_iterator<char>(file)),
+                    std::istreambuf_iterator<char>());
+        file.close();
+    }
 }

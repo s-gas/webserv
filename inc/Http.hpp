@@ -30,6 +30,7 @@ public:
     std::string emptyLine;
     std::string response;
     std::string body;
+    bool error;
 
     HttpResponse();
 };

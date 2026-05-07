@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-HttpResponse::HttpResponse(): version("HTTP/1.1"), server("webserv\r\n"), emptyLine("\r\n") {
+HttpResponse::HttpResponse(): version("HTTP/1.1"), server("webserv\r\n"), emptyLine("\r\n"), error("false"){
     statuses["200"] = "OK";
     statuses["400"] = "BAD REQUEST";
     statuses["404"] = "NOT FOUND";

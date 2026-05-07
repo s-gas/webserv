@@ -27,6 +27,7 @@ public:
     std::map<std::string, std::string> contentTypes;
     enum BlockType type;
     std::string root;
+    std::string errorsRoot;
     std::string index;
 
     Block(enum BlockType type);
