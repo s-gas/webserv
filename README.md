@@ -18,16 +18,17 @@ It handles multiple connections using `epoll`.
 
 The server requires a configuration file with extension `.conf` in order to run.
 
-Its structure is strongly inspired by **nginx** configuration file.
+Its structure is inspired by **nginx** configuration file and defines the directives, which can be of two types:
 
-It defines the directives, which can be:
-- block directive: consists of a name and set of instructions surrounded my curly braces:
+- **block directive**: consists of a name and set of instructions surrounded my curly braces:
+
 ```conf
 <block_directive_name> {
   <instructions>
 }
 ```
-- simple directive: consists of a name and a value separated by one space and followed by a semicolon:
+- **simple directive**: consists of a name and a value separated by one space and followed by a semicolon:
+
 ```conf
 <simple_directive_name> <value>;
 ```
@@ -117,7 +118,6 @@ server {
 
 This will start the server with a single `server` block listening at port `1024`. `root` is set to `www` and `index` to `index.html`.
 
-
 ## How to run
 
 Clone the repository:
@@ -138,6 +138,16 @@ Create the executable via the `Makefile`:
 make
 ```
 
+### Through binary file
+
+Run the program passing as argument the configuration file:
+
+```bash
+./webserv <configuration_file>
+```
+
+### Through Docker
+
 Create the Docker image:
 
 ```bash
@@ -149,6 +159,8 @@ Run the container:
 ```bash
 docker run --rm -d -p 8080:8080 --name webserv webserv:1
 ```
+
+This will run the program with `conf-files/webserv.conf` as argument.
 
 ### Flags used
 
