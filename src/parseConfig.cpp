@@ -98,7 +98,7 @@ void parseDirectives(Block &block, std::ifstream &file, int level, int &numBrace
                 Server &server = static_cast<Server &>(block);
                 server.addChild(location);
             } else {
-                throw std::runtime_error("Block directive is missing");
+                throw std::runtime_error("Block directive is invalid");
             }
         } else if (isNotEmpty(line)) {
             parseDirective(line, block);

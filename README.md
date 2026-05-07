@@ -14,11 +14,108 @@ It handles multiple connections using `epoll`.
 
 `epoll` is a Linux-only system call, which means that it won't work on other operating systems. For this reason the program is containerized with Docker.
 
-## Todo list
+## Configuration file
 
-- parse HTTP request
-- serve static files
-- support CGI
+The server requires a configuration file with extension `.conf` in order to run.
+
+Its structure is strongly inspired by **nginx** configuration file.
+
+It defines the directives, which can be:
+- block directive: consists of a name and set of instructions surrounded my curly braces:
+```conf
+<block_directive_name> {
+  <instructions>
+}
+```
+- simple directive: consists of a name and a value separated by one space and followed by a semicolon:
+```conf
+<simple_directive_name> <value>;
+```
+
+### Block directives
+
+- `global`
+
+  It represent the top-level context. It is implicit, which means that the configuration file would not have `global {}`.
+
+- `server`
+
+  Can be defined only in `global`.
+
+  At least one `server` directive must be defined.
+
+- `location`
+
+  Can be defined only in `server`. Between the name and the opening curly brace, an endpoint must be specified:
+
+  ```conf
+  location / {
+  }
+  ```
+
+  In this example, `/` is the endpoint of the `location` block directive.
+
+In order to be valid, the closing curly brace must be in a different line than the opening curly brace.
+
+This is invalid:
+
+```conf
+server {}
+```
+
+This is valid:
+
+```conf
+server {
+}
+
+### Simple directives
+
+- `root`
+
+  It determines the directory from which static files will be served. 
+
+  It can be defined at any scope. 
+
+  If not defined, it is set to `www`.
+
+  If multiple definition are present in the same block directive, the last one is applied.
+
+- `index`
+
+  It determines the default file to serve.
+
+  It can be defined at any scope.
+
+  If not defined, it is set to `index.html`.
+
+  If multiple definition are present in the same block directive, the last one is applied.
+
+- `listen`
+
+  It determines a port that a server listens from.
+
+  It can be defined only inside a `server` block.
+
+  If not defined, the program will exit with `[ERROR] No port specified`.
+
+  Multiple definitions are allowed in the same block directive.
+
+### Simple web server
+
+The configuration file of a simple web server would like this:
+
+```conf
+server {
+  listen 1024;
+
+  location / {
+  }
+}
+```
+
+This will start the server with a single `server` block listening at port `1024`. `root` is set to `www` and `index` to `index.html`.
+
 
 ## How to run
 
