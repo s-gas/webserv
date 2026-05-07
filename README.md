@@ -4,6 +4,12 @@
 
 <img src="assets/webserv-banner.png" alt="webserv project banner" width="100%">
 
+## Table of contents
+
+- [Description](#description)
+- [Configuration file](#configuration-file)
+- [How to run](#how-to-run)
+
 ## Description
 
 HTTP web server built from scratch in C++98.
