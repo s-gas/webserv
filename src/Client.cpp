@@ -13,8 +13,13 @@ bool Client::handleData() {
   std::string requestString = readRequest(fd);
   request = HttpRequest(requestString);
   printRequest(request.rawString);
+  getStatus();
   if (request.method == "GET") {
       serveFile();
+  } else if (request.method == "POST") {
+      response.response = "POST REQUEST";
+  } else if (request.method == "DELETE") {
+      response.response = "DELETE REQUEST";
   }
   printResponse(response.response);
   write(fd, response.response.c_str(), response.response.size());
@@ -23,7 +28,6 @@ bool Client::handleData() {
 }
 
 void Client::serveFile() {
-    getStatus();
     writeBody();
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
@@ -58,12 +62,10 @@ int Client::isEndpoint() {
     int fallback = -1;
     for (size_t i = 0; i < server->locations.size(); i++) {
         if (request.endpoint == server->locations[i].endpoint) {
-            std::cout << "endpoint found: " << request.endpoint << std::endl;
             return i;
         }
         if (server->locations[i].endpoint == "/") {
             fallback = i;
-            std::cout << "fallback" << std::endl;
         }
     }
     return fallback;
