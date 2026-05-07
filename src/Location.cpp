@@ -1,4 +1,3 @@
 #include "Server.hpp"
 
-Location::Location()
-: Block(LOCATION), endpoint("/") {}
+Location::Location(): Block(LOCATION) {}
