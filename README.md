@@ -68,6 +68,7 @@ This is valid:
 ```conf
 server {
 }
+```
 
 ### Simple directives
 
