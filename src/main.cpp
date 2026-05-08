@@ -1,3 +1,4 @@
+#include "Cgi.hpp"
 #include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
@@ -5,7 +6,7 @@
 #include "signal.hpp"
 #include <iostream>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[], char *envp[]) {
   if (argc != 2) {
     std::cerr << "Usage: ./webserv <config file>" << std::endl;
     return 1;
@@ -18,6 +19,7 @@ int main(int argc, char *argv[]) {
     checkExtension(fileName);
     readFile(configFile, fileName);
     parseConfig(main, configFile);
+    Cgi::initCgi(envp);
     if (main.init() == SUCCESS) {
       main.run();
     }

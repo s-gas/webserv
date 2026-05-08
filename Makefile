@@ -21,6 +21,7 @@ SRC_FILES	= $(addsuffix .cpp, main \
 								Config \
 								Server \
 								Client \
+								Cgi \
 								Location \
 								Log \
 								checkExtension \
