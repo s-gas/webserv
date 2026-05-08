@@ -6,7 +6,7 @@
 #include "signal.hpp"
 #include <iostream>
 
-int main(int argc, char *argv[], char *envp[]) {
+int main(int argc, char *argv[]) {
   if (argc != 2) {
     std::cerr << "Usage: ./webserv <config file>" << std::endl;
     return 1;
@@ -19,7 +19,6 @@ int main(int argc, char *argv[], char *envp[]) {
     checkExtension(fileName);
     readFile(configFile, fileName);
     parseConfig(main, configFile);
-    Cgi::initCgi(envp);
     if (main.init() == SUCCESS) {
       main.run();
     }

@@ -7,7 +7,7 @@
 // public ----------------------------------------------------------------------
 
 Cgi::Cgi(HttpRequest &request, const std::string &sp)
-    : scriptPath(sp), argArr(NULL) {
+    : scriptPath(sp), argArr(NULL), envArr(NULL) {
   initEnv(request);
   envArr = mapToArr(envMap);
 }
@@ -19,33 +19,37 @@ Cgi::~Cgi() {
     freeArr(argArr);
 }
 
-void Cgi::initCgi(char **&envp) {
-  std::vector<std::string> envPath;
-  setEnvPath(envp, envPath);
+std::string Cgi::execute() {
+  // Piping
+  int pipePToC[] = {-1, -1}; // Parent -> Child
+  int pipeCToP[] = {-1, -1}; // Child -> Parent
+
+  if (pipe(pipePToC) == -1) {
+    throw std::runtime_error("Cgi-Piping failed");
+  }
+  if (pipe(pipeCToP) == -1) {
+    closePipes(pipePToC, pipeCToP);
+    throw std::runtime_error("Cgi-Piping failed");
+  }
+
+  // Forking
+  pid_t pid = fork();
+  if (pid == -1) {
+    closePipes(pipePToC, pipeCToP);
+    throw std::runtime_error("Cgi-Forking failed");
+  }
+
+  // Child
+  if (pid == 0) {
+    if (dup2(pipePToC[0], STDIN_FILENO) == -1 ||
+        dup2(pipeCToP[1], STDOUT_FILENO) == -1) {
+      exit(1);
+    }
+    closePipes(pipePToC, pipeCToP);
+  }
 }
 
 // private ---------------------------------------------------------------------
-
-void Cgi::setEnvPath(char **&envp, std::vector<std::string> &envPath) {
-  char *pathArr = NULL;
-  char *path = NULL;
-  size_t i = 0;
-  while (envp[i] != NULL) {
-    if (std::strncmp("PATH=", envp[i], 5) == 0) {
-      pathArr = strdup(envp[i] + 5);
-      break;
-    }
-    ++i;
-  }
-  if (!pathArr)
-    throw std::runtime_error("CGI: Path Setup Failed");
-  path = std::strtok(pathArr, ":");
-  while (path != NULL) {
-    envPath.push_back(std::string(path));
-    path = std::strtok(NULL, ":");
-  }
-  free(pathArr);
-}
 
 // populating the env-Map
 void Cgi::initEnv(HttpRequest &request) {
@@ -67,6 +71,29 @@ void Cgi::initEnv(HttpRequest &request) {
   std::stringstream ss;
   ss << request.contentLength;
   envMap["CONTENT_LENGTH"] = ss.str();
+}
+
+void Cgi::initArgs(const std::string &interpreterPath) {
+  argArr = static_cast<char **>(malloc(sizeof(char*) * 3));
+  argArr[0] = strdup(interpreterPath.c_str());
+  if (!argArr[0])
+    throw std::runtime_error("Malloc failed");
+  argArr[1] = strdup(scriptPath.c_str());
+  if (!argArr[1]) {
+    free(argArr[0]);
+    throw std::runtime_error("Malloc failed");
+  }
+
+  argArr[2] = NULL;
+}
+
+void Cgi::freeArgs() {
+  if (argArr) {
+    for (size_t i = 0; argArr[i]; ++i) {
+      free(argArr[i]);
+    }
+    free(argArr);
+  }
 }
 
 char **Cgi::mapToArr(std::map<std::string, std::string> &m) {
@@ -93,4 +120,13 @@ void Cgi::freeArr(char **&arr) {
   }
   delete[] arr;
   arr = NULL;
+}
+
+void Cgi::closePipes(int *pipe1, int *pipe2) {
+  for (size_t i = 0; i < 2; ++i) {
+    if (pipe1[i] != -1)
+      close(pipe1[i]);
+    if (pipe2[i] != -1)
+      close(pipe2[i]);
+  }
 }

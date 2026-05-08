@@ -4,7 +4,6 @@
 #include "Http.hpp"
 #include <map>
 #include <string>
-#include <vector>
 
 class Cgi {
 
@@ -14,8 +13,6 @@ public:
 
   std::string execute();
 
-  static void initCgi(char **&env);
-
 private:
   std::map<std::string, std::string> envMap;
   std::string scriptPath;
@@ -23,15 +20,11 @@ private:
   char **argArr;
 
   void initEnv(HttpRequest &request);
+  void initArgs(const std::string &interpreterPath);
   char **mapToArr(std::map<std::string, std::string> &m);
   void freeArr(char **&arr);
-  static void closePipes(int *&pipe1, int *&pipe2);
-
-  // part of Interpreters
-  static std::map<std::string, std::string> interpreters;
-  static void setEnvPath(char **&envp, std::vector<std::string> &envPath);
-  static void setInterpreters(std::vector<std::string> &envPath);
-  static bool pathIsValid(const std::string &path);
+  void freeArg();
+  static void closePipes(int *pipe1, int *pipe2);
 };
 
 #endif
