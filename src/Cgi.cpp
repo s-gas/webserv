@@ -2,12 +2,23 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 // public ----------------------------------------------------------------------
 
+/* next to-dos:
+ * - constructor / destructor rework (use malloc only)
+ * - set all variables within the constructor
+ * - setting root and interpreters during config parsing
+ * - build execute within the epoll, implement timeout
+*/
+
+std::string Cgi::root = ""; 
+std::map<std::string, std::string> Cgi::interpreter;
+
 Cgi::Cgi(HttpRequest &request, const std::string &sp)
-    : scriptPath(sp), argArr(NULL), envArr(NULL) {
+    : scriptName(sp), envArr(NULL) {
   initEnv(request);
   envArr = mapToArr(envMap);
 }
@@ -23,11 +34,7 @@ std::string Cgi::execute() {
   // Piping
   int pipePToC[] = {-1, -1}; // Parent -> Child
   int pipeCToP[] = {-1, -1}; // Child -> Parent
-
-  if (pipe(pipePToC) == -1) {
-    throw std::runtime_error("Cgi-Piping failed");
-  }
-  if (pipe(pipeCToP) == -1) {
+  if (pipe(pipePToC) == -1 || pipe(pipeCToP) == -1) {
     closePipes(pipePToC, pipeCToP);
     throw std::runtime_error("Cgi-Piping failed");
   }
@@ -46,7 +53,35 @@ std::string Cgi::execute() {
       exit(1);
     }
     closePipes(pipePToC, pipeCToP);
+    if (execve(argArr[0], argArr, envArr) == -1)
+      exit(1);
   }
+
+  // Parent
+  close(pipePToC[0]);
+  close(pipeCToP[1]);
+  if (!envMap["REQUEST_METHOD"].empty() && envMap["REQUEST_METHOD"] == "POST") {
+//    write(pipePToC[1], request.body.c_str(), request.body.size());
+  }
+  close(pipePToC[1]);
+
+  char buffer[4096];
+  std::string response;
+  ssize_t bytesRead;
+  while ((bytesRead = read(pipeCToP[0], buffer, sizeof(buffer))) > 0) {
+    response.append(buffer, bytesRead);
+  }
+  close(pipeCToP[0]);
+  waitpid(pid, NULL, 0);
+  return response;
+}
+
+void Cgi::setCgiRoot(std::string cgiR) {
+  root = cgiR;
+}
+
+void Cgi::setCgiInterpreter(std::string key, std::string value) {
+  interpreter[key] = value;
 }
 
 // private ---------------------------------------------------------------------
@@ -62,23 +97,24 @@ void Cgi::initEnv(HttpRequest &request) {
   }
   envMap["GATEWAY_INTERFACE"] = "CGI/1.1";
   envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
+  envMap["SERVER_SOFTWARE"] = "42webserv/1.0";
   envMap["REQUEST_METHOD"] = request.method;
-  envMap["QUERY_STRING"] = query;
-  envMap["PATH_INFO"] = path;
+  envMap["QUERY_STRING"] = queryString; // Everthing after ?
+  envMap["CONTENT_LENGTH"] = request.contentLengthString();
   envMap["CONTENT_TYPE"] = request.contentType;
-  envMap["SCRIPT_FILENAME"] = scriptPath;
-
-  std::stringstream ss;
-  ss << request.contentLength;
-  envMap["CONTENT_LENGTH"] = ss.str();
+  envMap["SCRIPT_NAME"] = scriptName; // path including .file
+  envMap["SCRIPT_FILENAME"] = root + scriptName;
+  envMap["PATH_INFO"] = pathInfo; // trailing path after .file
+  envMap["PATH_TRANSLATED"] = root + pathInfo;
+  envMap["REDIRECT_STATUS"] = "200";
 }
 
 void Cgi::initArgs(const std::string &interpreterPath) {
-  argArr = static_cast<char **>(malloc(sizeof(char*) * 3));
+  argArr = static_cast<char **>(malloc(sizeof(char *) * 3));
   argArr[0] = strdup(interpreterPath.c_str());
   if (!argArr[0])
     throw std::runtime_error("Malloc failed");
-  argArr[1] = strdup(scriptPath.c_str());
+//  argArr[1] = strdup(scriptPath.c_str());
   if (!argArr[1]) {
     free(argArr[0]);
     throw std::runtime_error("Malloc failed");
@@ -87,7 +123,7 @@ void Cgi::initArgs(const std::string &interpreterPath) {
   argArr[2] = NULL;
 }
 
-void Cgi::freeArgs() {
+void Cgi::freeArg() {
   if (argArr) {
     for (size_t i = 0; argArr[i]; ++i) {
       free(argArr[i]);

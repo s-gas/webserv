@@ -13,9 +13,16 @@ public:
 
   std::string execute();
 
+  static std::string root;
+  static std::map<std::string, std::string> interpreter;
+  static void setCgiRoot(std::string cgiR);
+  static void setCgiInterpreter(std::string key, std::string value);
+
 private:
   std::map<std::string, std::string> envMap;
-  std::string scriptPath;
+  std::string scriptName;  // path including .file
+  std::string pathInfo;    // trailing path after .file
+  std::string queryString; // everything after ?
   char **envArr;
   char **argArr;
 

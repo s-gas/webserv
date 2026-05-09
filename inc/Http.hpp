@@ -21,9 +21,13 @@ public:
 
     HttpRequest();
     HttpRequest(std::string rawString);
+<<<<<<< HEAD
 
     void setDirectoryAndFile();
     void print();
+=======
+    std::string contentLengthString();
+>>>>>>> d2f5fa1 (build: cgi handling)
 };
 
 class HttpResponse {
