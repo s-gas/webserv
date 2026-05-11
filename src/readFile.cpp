@@ -6,6 +6,6 @@
 void readFile(std::ifstream &file, std::string &fileName) {
     file.open(fileName.c_str());
     if (!file.is_open()) {
-        throw std::runtime_error("ERROR: Failed to open file");
+        throw std::runtime_error("Failed to open file");
     }
 }
