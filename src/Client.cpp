@@ -3,7 +3,6 @@
 #include "Server.hpp"
 #include "defines.hpp"
 #include "readRequest.hpp"
-#include "print.hpp"
 
 Client::Client() : server(NULL) {}
 
@@ -12,11 +11,12 @@ Client::Client(Server &s, int clientFd) : server(&s), locationIndex(-1), fd(clie
 bool Client::handleData() {
   std::string requestString = readRequest(fd);
   request = HttpRequest(requestString);
-  printRequest(request.rawString);
+  request.print();
   if (!isRequestValid()) {
       serveFile();
   } else if (isCgi()) {
       response.response = "Handle with CGI";
+      write(fd, response.response.c_str(), response.response.size());
   } else {
       serveFile();
   }
@@ -39,7 +39,7 @@ bool Client::isRequestValid() {
         response.status = "404";
         response.error = true;
     }
-    return response.error;
+    return !response.error;
 }
 
 bool Client::isMethodAllowed() {
@@ -64,6 +64,7 @@ void Client::serveFile() {
     writeBody();
     writeHeader();
     response.response = response.header + response.body;
+    response.print();
     write(fd, response.response.c_str(), response.response.size());
 }
 
@@ -114,5 +115,7 @@ void Client::writeHeader() {
 }
 
 bool Client::isCgi() {
-    return false;
+    if (locationIndex == -1) return false;
+    Location location = server->locations[locationIndex];
+    return location.cgi.size() != 0;
 }

@@ -8,3 +8,8 @@ HttpResponse::HttpResponse(): status("200"), version("HTTP/1.1"), server("webser
     statuses["404"] = "NOT FOUND";
     statuses["405"] = "METHOD NOT ALLOWED";
 }
+
+void HttpResponse::print() {
+    std::cout << "RESPONSE:" << std::endl;
+    std::cout << response << std::endl;
+}

@@ -128,6 +128,12 @@ server {
 
   Multiple definitions are allowed in the same block directive.
 
+- `cgi_script`
+
+  It defines the script that will handle the request.
+
+  It can be defined only inside a `location` block.
+
 ### Simple web server
 
 The configuration file of a simple web server would look like this:

@@ -72,7 +72,7 @@ void parseDirective(std::string &line, Block &block) {
         }
         Server &server = static_cast<Server &>(block);
         server.addListen(port);
-    } else if (tokens[0] == "cgi") {
+    } else if (tokens[0] == "cgi_pass") {
         if (block.type != LOCATION)
             throw std::runtime_error("Cgi directive can be defined only in a location block");
         Location &location = static_cast<Location &>(block);

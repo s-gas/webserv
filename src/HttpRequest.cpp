@@ -28,6 +28,11 @@ HttpRequest::HttpRequest(std::string str) : rawString(str), method(""), version(
     }
 }
 
+void HttpRequest::print() {
+    std::cout << "REQUEST:" << std::endl;
+    std::cout << rawString << std::endl;
+}
+
 std::vector<std::string> parseContent(std::string &line) {
     std::istringstream linestream(line);
     std::vector<std::string> words(3);

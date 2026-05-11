@@ -19,6 +19,8 @@ public:
 
     HttpRequest();
     HttpRequest(std::string rawString);
+
+    void print();
 };
 
 class HttpResponse {
@@ -34,6 +36,8 @@ public:
     bool error;
 
     HttpResponse();
+
+    void print();
 };
 
 std::vector<std::string> parseContent(std::string &line);
