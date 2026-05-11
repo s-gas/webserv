@@ -18,11 +18,13 @@ public:
     Client(Server &s, int clientFd);
     bool handleData();
     void serveFile();
-    void getStatus();
+    bool isRequestValid();
     bool isMethodAllowed();
     int isEndpoint();
+    void writeHeader();
     void writeBody();
     void writeError();
+    bool isCgi();
 };
 
 #endif

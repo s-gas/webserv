@@ -13,33 +13,17 @@ bool Client::handleData() {
   std::string requestString = readRequest(fd);
   request = HttpRequest(requestString);
   printRequest(request.rawString);
-  getStatus();
-  if (request.method == "GET") {
+  if (!isRequestValid()) {
       serveFile();
-  } else if (request.method == "POST") {
-      response.response = "POST REQUEST";
-  } else if (request.method == "DELETE") {
-      response.response = "DELETE REQUEST";
+  } else if (isCgi()) {
+      response.response = "Handle with CGI";
+  } else {
+      serveFile();
   }
-  printResponse(response.response);
-  write(fd, response.response.c_str(), response.response.size());
-  // return true when this Client is done
   return true;
 }
 
-void Client::serveFile() {
-    writeBody();
-    std::ostringstream ss;
-    ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
-    ss << "Server: " << response.server;
-    ss << "Content-Type: " << "text/html" << "\r\n";
-    ss << "Content-Length: " << response.body.size() << "\r\n";
-    ss << response.emptyLine;
-    ss << response.body;
-    response.response = ss.str();
-}
-
-void Client::getStatus() {
+bool Client::isRequestValid() {
     if (request.version != response.version) {
         response.status = "400";
         response.error = true;
@@ -47,11 +31,15 @@ void Client::getStatus() {
         response.status = "405";
         response.error = true;
     } else if ((locationIndex = isEndpoint()) != -1) {
-        response.status = "200";
+       if (!isCgi() && request.method != "GET") {
+           response.status = "405";
+           response.error = true;
+       }
     } else {
         response.status = "404";
         response.error = true;
     }
+    return response.error;
 }
 
 bool Client::isMethodAllowed() {
@@ -71,26 +59,36 @@ int Client::isEndpoint() {
     return fallback;
 }
 
+
+void Client::serveFile() {
+    writeBody();
+    writeHeader();
+    response.response = response.header + response.body;
+    write(fd, response.response.c_str(), response.response.size());
+}
+
 void Client::writeBody() {
-    std::string fileName;
-    if (locationIndex != -1) {
-        Location location = server->locations[locationIndex];
-        if (location.endpoint == "/") {
-            fileName = location.root + request.endpoint + location.index;
-        } else {
-            fileName = location.root + location.endpoint + location.index;
-        }
-        std::ifstream file(fileName.c_str());
-        if (file) {
-            response.body.assign((std::istreambuf_iterator<char>(file)),
-                        std::istreambuf_iterator<char>());
-            file.close();
-        } else {
-            response.status = "404";
-            response.error = true;
-        }
+    if (response.error == true) {
+        writeError();
+        return;
     }
-    if (response.error == true) writeError();
+    std::string fileName;
+    Location location = server->locations[locationIndex];
+    if (location.endpoint == "/") {
+        fileName = location.root + request.endpoint + location.index;
+    } else {
+        fileName = location.root + location.endpoint + location.index;
+    }
+    std::ifstream file(fileName.c_str());
+    if (file) {
+        response.body.assign((std::istreambuf_iterator<char>(file)),
+                    std::istreambuf_iterator<char>());
+        file.close();
+    } else {
+        response.status = "404";
+        response.error = true;
+        writeError();
+    }
 }
 
 void Client::writeError() {
@@ -102,4 +100,19 @@ void Client::writeError() {
                     std::istreambuf_iterator<char>());
         file.close();
     }
+}
+
+
+void Client::writeHeader() {
+    std::ostringstream ss;
+    ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
+    ss << "Server: " << response.server;
+    ss << "Content-Type: " << "text/html" << "\r\n";
+    ss << "Content-Length: " << response.body.size() << "\r\n";
+    ss << response.emptyLine;
+    response.header = ss.str();
+}
+
+bool Client::isCgi() {
+    return false;
 }

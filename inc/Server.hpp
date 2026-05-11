@@ -37,6 +37,7 @@ public:
 class Location: public Block {
 public:
     std::string endpoint;
+    std::string cgi;
 
     Location();
 };

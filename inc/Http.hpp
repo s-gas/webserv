@@ -27,6 +27,7 @@ public:
     std::string status;
     std::string version;
     std::string server;
+    std::string header;
     std::string emptyLine;
     std::string response;
     std::string body;
