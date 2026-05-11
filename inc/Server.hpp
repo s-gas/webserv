@@ -19,11 +19,12 @@ enum BlockType {
     LOCATION
 };
 
+
 class Block {
 public:
-    std::set<std::string> allowedMethods;
-    std::map<std::string, std::string> contentTypes;
     enum BlockType type;
+    std::set<std::string> methods;
+    std::map<std::string, std::string> contentTypes;
     std::string root;
     std::string errorsRoot;
     std::string index;

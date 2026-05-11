@@ -27,23 +27,19 @@ bool Client::isRequestValid() {
     if (request.version != response.version) {
         response.status = "400";
         response.error = true;
-    } else if (isMethodAllowed() == false) {
+    } else if ((locationIndex = isEndpoint()) == -1) {
         response.status = "405";
         response.error = true;
-    } else if ((locationIndex = isEndpoint()) != -1) {
-       if (!isCgi() && request.method != "GET") {
-           response.status = "405";
-           response.error = true;
-       }
-    } else {
-        response.status = "404";
+    } else if (isMethodAllowed() == false) {
+        response.status = "405";
         response.error = true;
     }
     return !response.error;
 }
 
 bool Client::isMethodAllowed() {
-    return server->allowedMethods.find(request.method) != server->allowedMethods.end();
+    Location location = server->locations[locationIndex];
+    return location.methods.find(request.method) != location.methods.end();
 }
 
 int Client::isEndpoint() {

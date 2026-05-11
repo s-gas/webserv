@@ -31,16 +31,14 @@ void parseDirectives(Block &block, std::ifstream &file, int level, int &numBrace
             numBraces++;
             if (isBlock(line, "server")) {
                 Server server;
-                server.root = block.root;
-                server.index = block.index;
+                inheritDirectives(server, block);
                 parseDirectives(server, file, level + 1, numBraces, hasServer);
                 hasServer = true;
                 Config &config = static_cast<Config &>(block);
                 config.addChild(server);
             } else if (isBlock(line, "location")) {
                 Location location;
-                location.root = block.root;
-                location.index = block.index;
+                inheritDirectives(location, block);
                 storeEndPoint(location, line);
                 parseDirectives(location, file, level + 1, numBraces, hasServer);
                 Server &server = static_cast<Server &>(block);
@@ -57,8 +55,7 @@ void parseDirectives(Block &block, std::ifstream &file, int level, int &numBrace
 void parseDirective(std::string &line, Block &block) {
     std::vector<std::string> tokens = split(line);
     if (tokens.size() <= 1) throw std::runtime_error("Invalid token");
-    std::string last = tokens[tokens.size() - 1];
-    last = removeSemicolon(last);
+    tokens[tokens.size() - 1] = removeSemicolon(tokens[tokens.size() - 1]);
     if (tokens[0] == "root") {
         block.root = parseSingleValue(tokens);
     } else if (tokens[0] == "index") {
@@ -75,7 +72,7 @@ void parseDirective(std::string &line, Block &block) {
         Location &location = static_cast<Location &>(block);
         location.cgi = parseSingleValue(tokens);
     } else if (tokens[0] == "methods") {
-        block.allowedMethods = parseMultipleValues(tokens);
+        block.methods = parseMultipleValues(tokens);
     }
 }
 
@@ -102,4 +99,10 @@ std::set<std::string> parseMultipleValues(std::vector<std::string> tokens) {
         methods.insert(tokens[i]);
     }
     return methods;
+}
+
+void inheritDirectives(Block &child, Block &parent) {
+    child.root = parent.root;
+    child.index = parent.index;
+    child.methods = parent.methods;
 }
