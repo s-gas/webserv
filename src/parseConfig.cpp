@@ -56,26 +56,50 @@ void parseDirectives(Block &block, std::ifstream &file, int level, int &numBrace
 
 void parseDirective(std::string &line, Block &block) {
     std::vector<std::string> tokens = split(line);
-    if (tokens.size() != 2) throw std::runtime_error("Invalid token");
-    std::string value = removeSemicolon(tokens[1]);
+    if (tokens.size() <= 1) throw std::runtime_error("Invalid token");
+    std::string last = tokens[tokens.size() - 1];
+    last = removeSemicolon(last);
     if (tokens[0] == "root") {
-        block.root = value;
+        block.root = parseSingleValue(tokens);
     } else if (tokens[0] == "index") {
-        block.index = value;
+        block.index = parseSingleValue(tokens);
     } else if (tokens[0] == "listen") {
         if (block.type != SERVER)
             throw std::runtime_error("Listen directive can be defined only in a server block");
-        if (!isNumber(value)) throw std::runtime_error("Listen directive accepts only positive integers as parameter");
-        int port = std::atoi(value.c_str());
-        if (port <= 0 || port > 65536) {
-            throw std::runtime_error("Invalid port number");
-        }
+        int port = parsePort(tokens);
         Server &server = static_cast<Server &>(block);
         server.addListen(port);
     } else if (tokens[0] == "cgi_pass") {
         if (block.type != LOCATION)
             throw std::runtime_error("Cgi directive can be defined only in a location block");
         Location &location = static_cast<Location &>(block);
-        location.cgi = value;
+        location.cgi = parseSingleValue(tokens);
+    } else if (tokens[0] == "methods") {
+        block.allowedMethods = parseMultipleValues(tokens);
     }
+}
+
+std::string parseSingleValue(std::vector<std::string> tokens) {
+    if (tokens.size() != 2)
+        throw std::runtime_error("Invalid number of values");
+    return tokens[1];
+}
+
+int parsePort(std::vector<std::string> tokens) {
+    if (tokens.size() != 2)
+        throw std::runtime_error("Invalid number of values");
+    if (!isNumber(tokens[1])) throw std::runtime_error("Listen directive accepts only positive integers as parameter");
+    int port = std::atoi(tokens[1].c_str());
+    if (port <= 0 || port > 65536) {
+        throw std::runtime_error("Invalid port number");
+    }
+    return port;
+}
+
+std::set<std::string> parseMultipleValues(std::vector<std::string> tokens) {
+    std::set<std::string> methods;
+    for (size_t i = 1; i < tokens.size(); i++) {
+        methods.insert(tokens[i]);
+    }
+    return methods;
 }

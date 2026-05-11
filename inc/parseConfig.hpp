@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <set>
 #include "Server.hpp"
 
 void readFile(std::ifstream &file, std::string &fileName);
@@ -11,6 +12,9 @@ void checkExtension(std::string &fileName);
 void parseConfig(Block &block, std::ifstream &file);
 void parseDirectives(Block &block, std::ifstream &file, int level, int &numBraces, bool &hasServer);
 void parseDirective(std::string &line, Block &block);
+std::string parseSingleValue(std::vector<std::string> tokens);
+int parsePort(std::vector<std::string> tokens);
+std::set<std::string> parseMultipleValues(std::vector<std::string> tokens);
 bool isClosing(std::string line);
 bool isOpening(std::string line);
 bool isBlock(std::string line, std::string keyword);
