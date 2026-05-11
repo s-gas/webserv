@@ -167,13 +167,13 @@ Change to the project directory:
 cd webserv
 ```
 
+### Through binary file
+
 Create the executable via the `Makefile`:
 
 ```bash
 make
 ```
-
-### Through binary file
 
 Run the program passing as argument the configuration file:
 
