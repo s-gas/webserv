@@ -33,7 +33,7 @@ There are two types of directives:
   <instructions>
 }
 ```
-- **simple directive**: consists of a name and a value separated by one space and followed by a semicolon:
+- **simple directive**: consists of a name and one or more values separated by one space and followed by a semicolon:
 
 ```conf
 <simple_directive_name> <value>;
@@ -133,6 +133,18 @@ server {
   It defines the script that will handle the request.
 
   It can be defined only inside a `location` block.
+
+- `methods`
+
+  It defines the methods that are allowed.
+
+  It can be defined in any block and it can accept multiple values.
+
+- `client_max_body_size`
+
+  It defines the maximum body size of the request.
+
+  It can be defined in any block.
 
 ### Simple web server
 

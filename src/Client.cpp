@@ -34,6 +34,9 @@ bool Client::isRequestValid() {
     } else if (isMethodAllowed() == false) {
         response.status = "405";
         response.error = true;
+    } else if (isSizeOkay() == false) {
+        response.status = "413";
+        response.error = true;
     }
     return !response.error;
 }
@@ -46,7 +49,8 @@ bool Client::isMethodAllowed() {
 int Client::isEndpoint() {
     int fallback = -1;
     for (size_t i = 0; i < server->locations.size(); i++) {
-        if (request.endpoint.find(server->locations[i].endpoint) == 0) {
+        Location &location = server->locations[i];
+        if (request.endpoint.find(location.endpoint) == 0 && location.endpoint != "/") {
             return i;
         }
         if (server->locations[i].endpoint == "/") {
@@ -54,6 +58,12 @@ int Client::isEndpoint() {
         }
     }
     return fallback;
+}
+
+bool Client::isSizeOkay() {
+    Location location = server->locations[locationIndex];
+    if (location.maxBodySize == 0) return true;
+    return (request.contentLength < location.maxBodySize);
 }
 
 void Client::serveFile() {
@@ -81,8 +91,10 @@ void Client::uploadFile() {
 void Client::generatePath() {
     Location location = server->locations[locationIndex];
     path = location.root;
+    std::cout << location.endpoint << std::endl;
     path += location.endpoint == "/" ? request.endpoint : location.endpoint;
     if (request.file == "") path += location.index;
+    std::cout << location.index << std::endl;
 }
 
 void Client::readFile() {
@@ -100,6 +112,7 @@ void Client::readFile() {
 }
 
 void Client::writeFile() {
+    std::cout << path << std::endl;
     std::ofstream file(path.c_str());
     if (!file.is_open()) {
         response.status = "500";
