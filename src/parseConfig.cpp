@@ -70,7 +70,9 @@ void parseDirective(std::string &line, Block &block) {
         if (block.type != LOCATION)
             throw std::runtime_error("Cgi directive can be defined only in a location block");
         Location &location = static_cast<Location &>(block);
-        location.cgi = parseSingleValue(tokens);
+        if (tokens.size() > 3)
+            throw std::runtime_error("Cgi directive can only contain two tokens, cgi_pass <.file> <interpreter>");
+        location.cgi[tokens[1]] = tokens[2];
     } else if (tokens[0] == "methods") {
         block.methods = parseMultipleValues(tokens);
     } else if (tokens[0] == "client_max_body_size") {
