@@ -18,7 +18,7 @@ bool Client::handleData() {
       response.response = "Handle with CGI";
       write(fd, response.response.c_str(), response.response.size());
   } else {
-        generatePath();
+    generatePath();
       if (request.method == "GET") serveFile();
       else if (request.method == "POST") uploadFile();
       else if (request.method == "DELETE") deleteFile();

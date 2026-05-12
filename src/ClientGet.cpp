@@ -5,11 +5,8 @@
 #include "readRequest.hpp"
 
 void Client::serveFile() {
-    if (response.error == true) {
-        writeError();
-    } else {
-        readFile();
-    }
+    if (response.error == true) writeError();
+    else readFile();
     writeHeader(".html");
     response.response = response.header + response.body;
     response.print();

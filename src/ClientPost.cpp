@@ -21,6 +21,7 @@ void Client::writeFile() {
         return;
     }
     response.status = "201";
+    response.body = "File created successfully\n";
     file << request.body;
     file.close();
 }
