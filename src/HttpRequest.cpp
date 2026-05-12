@@ -29,7 +29,6 @@ HttpRequest::HttpRequest(std::string str) : rawString(str), method(""), version(
     }
 }
 
-<<<<<<< HEAD
 void HttpRequest::setDirectoryAndFile() {
     if (endpoint.size() == 0) return;
     if (endpoint[endpoint.size() - 1] == '/') {
@@ -45,12 +44,12 @@ void HttpRequest::setDirectoryAndFile() {
 void HttpRequest::print() {
     std::cout << "REQUEST:" << std::endl;
     std::cout << rawString << std::endl;
-=======
+}
+
 std::string HttpRequest::contentLengthString() {
-  std::stringstream ss;
-  ss << this->contentLength;
-  return ss.str();
->>>>>>> d2f5fa1 (build: cgi handling)
+    std::stringstream ss;
+    ss << this->contentLength;
+    return ss.str();
 }
 
 std::vector<std::string> parseContent(std::string &line) {
