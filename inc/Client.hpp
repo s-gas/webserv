@@ -19,6 +19,7 @@ public:
     bool handleData();
     void serveFile();
     void uploadFile();
+    void deleteFile();
     bool isRequestValid();
     bool isMethodAllowed();
     int isEndpoint();
