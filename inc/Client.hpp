@@ -18,11 +18,13 @@ public:
     Client(Server &s, int clientFd);
     bool handleData();
     void serveFile();
+    void uploadFile();
     bool isRequestValid();
     bool isMethodAllowed();
     int isEndpoint();
-    void writeHeader();
-    void writeBody();
+    void writeHeader(std::string extension);
+    void readFile();
+    void writeFile();
     void generatePath();
     void writeError();
     bool isCgi();

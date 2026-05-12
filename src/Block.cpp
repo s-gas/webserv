@@ -7,5 +7,5 @@ Block::Block(enum BlockType BlockType)
     methods.insert("DELETE");
 
     contentTypes[".html"] = "text/html";
-    contentTypes[".css"] = "text/html";
+    contentTypes[".txt"] = "text/plain";
 }

@@ -18,7 +18,8 @@ bool Client::handleData() {
       response.response = "Handle with CGI";
       write(fd, response.response.c_str(), response.response.size());
   } else {
-      serveFile();
+      if (request.method == "GET") serveFile();
+      else if (request.method == "POST") uploadFile();
   }
   return true;
 }
@@ -55,23 +56,35 @@ int Client::isEndpoint() {
     return fallback;
 }
 
-
 void Client::serveFile() {
-    writeBody();
-    writeHeader();
+    generatePath();
+    readFile();
+    writeHeader(".html");
     response.response = response.header + response.body;
     response.print();
     write(fd, response.response.c_str(), response.response.size());
 }
 
-void Client::writeBody() {
-    if (response.error == true) {
-        writeError();
-        return;
-    }
+void Client::uploadFile() {
     generatePath();
+    writeFile();
+    writeHeader(".html");
+    response.response = response.header + response.body;
+    response.print();
+    write(fd, response.response.c_str(), response.response.size());
+}
+
+void Client::generatePath() {
+    Location location = server->locations[locationIndex];
+    path = location.root;
+    path += location.endpoint == "/" ? request.endpoint : location.endpoint;
+    if (request.file == "") path += location.index;
+}
+
+void Client::readFile() {
     std::ifstream file(path.c_str());
     if (file) {
+        response.status = "200";
         response.body.assign((std::istreambuf_iterator<char>(file)),
                     std::istreambuf_iterator<char>());
         file.close();
@@ -82,11 +95,17 @@ void Client::writeBody() {
     }
 }
 
-void Client::generatePath() {
-    Location location = server->locations[locationIndex];
-    path = location.root;
-    path += location.endpoint == "/" ? request.endpoint : location.endpoint;
-    if (request.file == "") path += location.index;
+void Client::writeFile() {
+    std::ofstream file(path.c_str());
+    if (!file.is_open()) {
+        response.status = "500";
+        response.error = true;
+        writeError();
+        return;
+    }
+    response.status = "201";
+    file << request.body;
+    file.close();
 }
 
 void Client::writeError() {
@@ -100,12 +119,11 @@ void Client::writeError() {
     }
 }
 
-
-void Client::writeHeader() {
+void Client::writeHeader(std::string extension) {
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
     ss << "Server: " << response.server;
-    ss << "Content-Type: " << "text/html" << "\r\n";
+    ss << "Content-Type: " << server->contentTypes[extension] << "\r\n";
     ss << "Content-Length: " << response.body.size() << "\r\n";
     ss << response.emptyLine;
     response.header = ss.str();
