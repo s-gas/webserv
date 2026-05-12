@@ -69,14 +69,8 @@ void Client::writeBody() {
         writeError();
         return;
     }
-    std::string fileName;
-    Location location = server->locations[locationIndex];
-    if (location.endpoint == "/") {
-        fileName = location.root + request.endpoint + location.index;
-    } else {
-        fileName = location.root + location.endpoint + location.index;
-    }
-    std::ifstream file(fileName.c_str());
+    generatePath();
+    std::ifstream file(path.c_str());
     if (file) {
         response.body.assign((std::istreambuf_iterator<char>(file)),
                     std::istreambuf_iterator<char>());
@@ -88,10 +82,17 @@ void Client::writeBody() {
     }
 }
 
+void Client::generatePath() {
+    Location location = server->locations[locationIndex];
+    path = location.root;
+    path += location.endpoint == "/" ? request.endpoint : location.endpoint;
+    if (request.file == "") path += location.index;
+}
+
 void Client::writeError() {
-    std::string fileName;
-    fileName = server->errorsRoot + "/" + response.status + ".html";
-    std::ifstream file(fileName.c_str());
+    std::string path;
+    path = server->errorsRoot + "/" + response.status + ".html";
+    std::ifstream file(path.c_str());
     if (file) {
         response.body.assign((std::istreambuf_iterator<char>(file)),
                     std::istreambuf_iterator<char>());

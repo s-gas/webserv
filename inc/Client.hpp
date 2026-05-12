@@ -2,7 +2,6 @@
 # define CLIENT_HPP
 
 #include "Http.hpp"
-#include <map>
 
 class Server;
 
@@ -11,6 +10,7 @@ public:
     HttpRequest request;
     HttpResponse response;
     Server *server;
+    std::string path;
     int locationIndex;
     int fd;
 
@@ -23,6 +23,7 @@ public:
     int isEndpoint();
     void writeHeader();
     void writeBody();
+    void generatePath();
     void writeError();
     bool isCgi();
 };
