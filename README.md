@@ -149,14 +149,13 @@ server {
 
 This will start the server with a single `server` block listening at port `1024`. `root` is set to `www` and `index` to `index.html`. The fallback `location /` allows the server to handle requests with any `endpoint`, which will be appended to `root`.
 
-**Formula**: `root` + `endpoint` + `index`.
-
 Some examples:
 
-| Request                       | File served           |
-|-------------------------------|-----------------------|
-| `http://localhost:1024`       | `www/index.html`      |
-| `http://localhost:1024/about/`| `www/about/index.html`|
+| Request                          | File served           |
+|----------------------------------|-----------------------|
+| `http://localhost:1024`          | `www/index.html`      |
+| `http://localhost:1024/about/`   | `www/about/index.html`|
+| `http://localhost:1024/file.txt` | `www/file.txt`        |
 
 
 ## HTTP request endpoints
@@ -172,6 +171,12 @@ http://<ip>:<port>/directory.name
 ```
 
 The endpoint would be interpreted as a file name and, if not found, the server will return `404`.
+
+To solve this, simply add a trailing `/`:
+
+```bash
+http://<ip>:<port>/directory.name/
+```
 
 ## How to run
 
