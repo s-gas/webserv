@@ -136,5 +136,5 @@ void Client::writeHeader(std::string extension) {
 bool Client::isCgi() {
     if (locationIndex == -1) return false;
     Location location = server->locations[locationIndex];
-    return location.cgi.size() != 0;
+    return !location.cgi.empty();
 }
