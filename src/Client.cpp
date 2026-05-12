@@ -52,6 +52,7 @@ int Client::isEndpoint() {
     for (size_t i = 0; i < server->locations.size(); i++) {
         Location &location = server->locations[i];
         if (request.endpoint.find(location.endpoint) == 0 && location.endpoint != "/") {
+            LOG_INFO << "i " << i;
             return i;
         }
         if (server->locations[i].endpoint == "/") {
@@ -149,6 +150,10 @@ void Client::writeHeader(std::string extension) {
 
 bool Client::isCgi() {
     if (locationIndex == -1) return false;
-    Location location = server->locations[locationIndex];
+    Location &location = server->locations[locationIndex];
+    LOG_INFO << "isCgi() = " << !location.cgi.empty();
+    LOG_INFO << "location.endpoint " << location.endpoint;
+    LOG_INFO << "location.root " << location.root;
+    LOG_INFO << "locationIndex " << locationIndex;
     return !location.cgi.empty();
 }
