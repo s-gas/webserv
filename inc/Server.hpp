@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <set>
+#include <map>
 #include <sys/epoll.h>
 
 enum BlockType {
@@ -17,10 +19,15 @@ enum BlockType {
     LOCATION
 };
 
+
 class Block {
 public:
     enum BlockType type;
+    std::set<std::string> methods;
+    std::map<std::string, std::string> contentTypes;
     std::string root;
+    std::string errorsRoot;
+    std::string index;
 
     Block(enum BlockType type);
     virtual ~Block() {}
@@ -29,6 +36,7 @@ public:
 class Location: public Block {
 public:
     std::string endpoint;
+    std::string cgi;
 
     Location();
 };
@@ -51,7 +59,6 @@ public:
 class Config: public Block {
 public:
     std::vector<Server> _servers;
-    std::vector<std::string> allowedMethods;
     std::map<int, Client> clients;
 
     Config();

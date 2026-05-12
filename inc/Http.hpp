@@ -9,8 +9,11 @@
 
 class HttpRequest {
 public:
+    std::string rawString;
     std::string method;
     std::string endpoint;
+    std::string directory;
+    std::string file;
     std::string version;
     std::string contentType;
     std::size_t contentLength;
@@ -18,6 +21,9 @@ public:
 
     HttpRequest();
     HttpRequest(std::string rawString);
+
+    void setDirectoryAndFile();
+    void print();
 };
 
 class HttpResponse {
@@ -26,19 +32,19 @@ public:
     std::string status;
     std::string version;
     std::string server;
+    std::string header;
     std::string emptyLine;
-    std::string fileName;
     std::string response;
     std::string body;
+    bool error;
 
     HttpResponse();
 
-    void generate(HttpRequest &request);
-    void generateHtml(HttpRequest &request);
+    void print();
 };
 
 std::vector<std::string> parseContent(std::string &line);
+std::string normalize(std::string str);
 std::string parseBody(std::istringstream &stream);
-
 
 #endif

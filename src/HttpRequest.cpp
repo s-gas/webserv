@@ -5,7 +5,7 @@
 
 HttpRequest::HttpRequest() : method(""), version(""), contentType(""), contentLength(0), body("") {}
 
-HttpRequest::HttpRequest(std::string str) : method(""), version(""), contentType(""), contentLength(0), body("") {
+HttpRequest::HttpRequest(std::string str) : rawString(str), method(""), version(""), contentType(""), contentLength(0), body("") {
     std::string line;
     std::istringstream stream(str);
     int i = 0;
@@ -13,7 +13,8 @@ HttpRequest::HttpRequest(std::string str) : method(""), version(""), contentType
         if (i == 0) {
             std::vector<std::string> words = parseContent(line);
             method = words[0];
-            endpoint = words[1];
+            endpoint = normalize(words[1]);
+            setDirectoryAndFile();
             version = words[2];
         } else if (isHeaderField("Content-Type: ", line)) {
             std::vector<std::string> words = parseContent(line);
@@ -28,11 +29,33 @@ HttpRequest::HttpRequest(std::string str) : method(""), version(""), contentType
     }
 }
 
+void HttpRequest::setDirectoryAndFile() {
+    if (endpoint.size() == 0) return;
+    if (endpoint[endpoint.size() - 1] == '/') {
+        directory = endpoint;
+        file = "";
+        return;
+    }
+    size_t lastSlash = endpoint.rfind('/');
+    directory = endpoint.substr(0, lastSlash + 1);
+    file = endpoint.substr(lastSlash + 1);
+}
+
+void HttpRequest::print() {
+    std::cout << "REQUEST:" << std::endl;
+    std::cout << rawString << std::endl;
+}
+
 std::vector<std::string> parseContent(std::string &line) {
     std::istringstream linestream(line);
     std::vector<std::string> words(3);
     linestream >> words[0] >> words[1] >> words[2];
     return words;
+}
+
+std::string normalize(std::string str) {
+    if (str.find(".") != std::string::npos) return str;
+    return str.size() == 0 || str[str.size() - 1] == '/' ? str : str + '/';
 }
 
 std::string parseBody(std::istringstream &stream) {

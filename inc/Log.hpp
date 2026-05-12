@@ -1,10 +1,10 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
-#include "defines.hpp"
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "defines.hpp"
 
 class Log {
 

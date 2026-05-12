@@ -2,6 +2,50 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include "Server.hpp"
+#include "parseConfig.hpp"
+
+bool isClosing(std::string line) {
+    size_t pos = line.find("}");
+    if (pos == line.npos) return false;
+    for (size_t i = 0; i < line.length(); i++) {
+        if (i == pos) continue;
+        if (!isspace(line[i])) throw std::runtime_error("Invalid token");
+    }
+    return true;
+}
+
+bool isOpening(std::string line) {
+    size_t pos = line.find("{");
+    if (pos == line.npos) return false;
+    checkOnlySpaces(line, pos + 1, line.length());
+    return true;
+}
+
+bool isBlock(std::string line, std::string keyword) {
+    size_t pos = line.find(keyword);
+    if (pos == line.npos) return false;
+    checkOnlySpaces(line, 0, pos);
+    size_t start = pos + keyword.length();
+    size_t end = line.find("{");
+    if (keyword == "server") {
+        checkBetweenDirectiveAndBrace(line, start, end, "server");
+    } else if (keyword == "location") {
+        checkBetweenDirectiveAndBrace(line, start, end, "location");
+    }
+    start = end + 1;
+    end = line.length();
+    checkOnlySpaces(line, start, end);
+    return true;
+}
+
+void storeEndPoint(Location &location, std::string line) {
+    std::vector<std::string> tokens = split(line);
+    if (tokens.size() != 3 || tokens[0] != "location" || tokens[2] != "{") {
+        throw std::runtime_error("Invalid token");
+    }
+    location.endpoint = tokens[1];
+}
 
 bool isNotEmpty(std::string line) {
     for (size_t i = 0; i < line.length(); i++) {

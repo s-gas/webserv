@@ -8,16 +8,7 @@
 
 // public
 
-Server::Server() : Block(SERVER) {
-  /*
-  this->_port.push_back(8080);
-
-  struct sockaddr_in addr;
-  std::memset(&addr, 0, sizeof(addr));
-  this->_addr.push_back(addr);
-  this->_serverFd.push_back(-1);
-  */
-}
+Server::Server() : Block(SERVER){}
 
 Server::~Server() {
   for (size_t i = 0; i < _serverFd.size(); ++i) {
@@ -44,7 +35,7 @@ void Server::addListen(size_t port) {
 
 void Server::init() {
   if (_port.size() == 0) {
-    this->addListen(8080);
+      throw std::runtime_error("No port specified");
   }
   // Loop through all ports defined for the server block
   for (size_t i = 0; i < _port.size(); ++i) {

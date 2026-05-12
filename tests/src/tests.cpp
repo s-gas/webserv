@@ -52,6 +52,8 @@ int main() {
     failures += testParseDirectives(17, "conf-files/test15.conf", "throw");
     failures += testParseDirectives(18, "conf-files/test16.conf", "throw");
     failures += testParseDirectives(19, "conf-files/test17.conf", "throw");
+    failures += testParseDirectives(20, "conf-files/test23.conf", "throw");
+    failures += testParseDirectives(21, "conf-files/test24.conf", "pass");
 
     // multiple ports
     std::cout << "\n Testing multiple ports" << std::endl;

@@ -11,13 +11,7 @@
 
 #define BUF_SIZE 1024
 
-// OCF
-
-Config::Config() : Block(MAIN), _epollFd(-1) {
-    allowedMethods.push_back("GET");
-    allowedMethods.push_back("POST");
-    allowedMethods.push_back("DELETE");
-}
+Config::Config() : Block(MAIN), _epollFd(-1){}
 
 Config::~Config() {
   if (_epollFd != -1) {
@@ -25,7 +19,6 @@ Config::~Config() {
     close(_epollFd);
   }
 }
-
 // Methods
 
 void Config::addChild(Server &server) { this->_servers.push_back(server); }
