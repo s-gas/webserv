@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "Cgi.hpp"
 #include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
@@ -15,7 +16,7 @@ bool Client::handleData() {
   if (!isRequestValid()) {
       serveFile();
   } else if (isCgi()) {
-      response.response = "Handle with CGI";
+      response.response = Cgi(request, server->locations[locationIndex]).execute();
       write(fd, response.response.c_str(), response.response.size());
   } else {
       if (request.method == "GET") serveFile();

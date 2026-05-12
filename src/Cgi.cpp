@@ -14,13 +14,10 @@
  * - build execute within the epoll, implement timeout
 */
 
-std::string Cgi::root = ""; 
-std::map<std::string, std::string> Cgi::interpreter;
-
-Cgi::Cgi(HttpRequest &request, const std::string &sp)
-    : scriptName(sp), envArr(NULL) {
+Cgi::Cgi(HttpRequest &request, Location &location) {
+  root = location.root;
+  interpreter = location.cgi;
   initEnv(request);
-  envArr = mapToArr(envMap);
 }
 
 Cgi::~Cgi() {
@@ -31,6 +28,7 @@ Cgi::~Cgi() {
 }
 
 std::string Cgi::execute() {
+  envArr = mapToArr(envMap);
   // Piping
   int pipePToC[] = {-1, -1}; // Parent -> Child
   int pipeCToP[] = {-1, -1}; // Child -> Parent
@@ -74,14 +72,6 @@ std::string Cgi::execute() {
   close(pipeCToP[0]);
   waitpid(pid, NULL, 0);
   return response;
-}
-
-void Cgi::setCgiRoot(std::string cgiR) {
-  root = cgiR;
-}
-
-void Cgi::setCgiInterpreter(std::string key, std::string value) {
-  interpreter[key] = value;
 }
 
 // private ---------------------------------------------------------------------

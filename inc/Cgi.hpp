@@ -2,23 +2,21 @@
 #define CGI_HPP
 
 #include "Http.hpp"
+#include "Server.hpp"
 #include <map>
 #include <string>
 
 class Cgi {
 
 public:
-  Cgi(HttpRequest &request, const std::string &sp);
+  Cgi(HttpRequest &request, Location &location);
   ~Cgi();
 
   std::string execute();
 
-  static std::string root;
-  static std::map<std::string, std::string> interpreter;
-  static void setCgiRoot(std::string cgiR);
-  static void setCgiInterpreter(std::string key, std::string value);
-
 private:
+  std::string root;
+  std::map<std::string, std::string> interpreter;
   std::map<std::string, std::string> envMap;
   std::string scriptName;  // path including .file
   std::string pathInfo;    // trailing path after .file
@@ -32,6 +30,9 @@ private:
   void freeArr(char **&arr);
   void freeArg();
   static void closePipes(int *pipe1, int *pipe2);
+
+  Cgi(Cgi const &);
+  Cgi &operator=(Cgi const &);
 };
 
 #endif
