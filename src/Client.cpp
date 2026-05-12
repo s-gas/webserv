@@ -45,7 +45,7 @@ bool Client::isMethodAllowed() {
 int Client::isEndpoint() {
     int fallback = -1;
     for (size_t i = 0; i < server->locations.size(); i++) {
-        if (request.endpoint.find(server->locations[i].endpoint) != std::string::npos) {
+        if (request.endpoint.find(server->locations[i].endpoint) == 0) {
             return i;
         }
         if (server->locations[i].endpoint == "/") {
