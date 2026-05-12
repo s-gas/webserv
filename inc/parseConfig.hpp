@@ -14,6 +14,7 @@ void parseDirectives(Block &block, std::ifstream &file, int level, int &numBrace
 void parseDirective(std::string &line, Block &block);
 std::string parseSingleValue(std::vector<std::string> tokens);
 int parsePort(std::vector<std::string> tokens);
+int parseSize(std::vector<std::string> tokens);
 std::set<std::string> parseMultipleValues(std::vector<std::string> tokens);
 void inheritDirectives(Block &child, Block &parent);
 bool isClosing(std::string line);

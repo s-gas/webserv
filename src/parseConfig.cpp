@@ -73,6 +73,8 @@ void parseDirective(std::string &line, Block &block) {
         location.cgi = parseSingleValue(tokens);
     } else if (tokens[0] == "methods") {
         block.methods = parseMultipleValues(tokens);
+    } else if (tokens[0] == "client_max_body_size") {
+        block.maxBodySize = parseSize(tokens);
     }
 }
 
@@ -91,6 +93,14 @@ int parsePort(std::vector<std::string> tokens) {
         throw std::runtime_error("Invalid port number");
     }
     return port;
+}
+
+int parseSize(std::vector<std::string> tokens) {
+    if (tokens.size() != 2)
+            throw std::runtime_error("Invalid number of values");
+    if (!isNumber(tokens[1])) throw std::runtime_error("Max body size directive accepts only positive integers as parameter");
+    int size = std::atoi(tokens[1].c_str());
+    return size;
 }
 
 std::set<std::string> parseMultipleValues(std::vector<std::string> tokens) {

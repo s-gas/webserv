@@ -28,6 +28,7 @@ public:
     void generatePath();
     void writeError();
     bool isCgi();
+    bool isSizeOkay();
 };
 
 #endif

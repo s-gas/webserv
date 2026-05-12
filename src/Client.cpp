@@ -34,6 +34,9 @@ bool Client::isRequestValid() {
     } else if (isMethodAllowed() == false) {
         response.status = "405";
         response.error = true;
+    } else if (isSizeOkay() == false) {
+        response.status = "413";
+        response.error = true;
     }
     return !response.error;
 }
@@ -54,6 +57,12 @@ int Client::isEndpoint() {
         }
     }
     return fallback;
+}
+
+bool Client::isSizeOkay() {
+    Location location = server->locations[locationIndex];
+    if (location.maxBodySize == 0) return true;
+    return (request.contentLength < location.maxBodySize);
 }
 
 void Client::serveFile() {
