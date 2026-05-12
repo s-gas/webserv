@@ -8,7 +8,6 @@ void Client::serveFile() {
     if (response.error == true) {
         writeError();
     } else {
-        generatePath();
         readFile();
     }
     writeHeader(".html");

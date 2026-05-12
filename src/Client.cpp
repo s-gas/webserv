@@ -18,6 +18,7 @@ bool Client::handleData() {
       response.response = "Handle with CGI";
       write(fd, response.response.c_str(), response.response.size());
   } else {
+        generatePath();
       if (request.method == "GET") serveFile();
       else if (request.method == "POST") uploadFile();
       else if (request.method == "DELETE") deleteFile();
@@ -71,10 +72,8 @@ bool Client::isSizeOkay() {
 void Client::generatePath() {
     Location location = server->locations[locationIndex];
     path = location.root;
-    std::cout << location.endpoint << std::endl;
     path += location.endpoint == "/" ? request.endpoint : location.endpoint;
     if (request.file == "") path += location.index;
-    std::cout << location.index << std::endl;
 }
 
 

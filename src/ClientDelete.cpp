@@ -4,4 +4,6 @@
 #include "defines.hpp"
 #include "readRequest.hpp"
 
-void Client::deleteFile() {}
+void Client::deleteFile() {
+    std::remove(path.c_str());
+}

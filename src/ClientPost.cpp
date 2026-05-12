@@ -5,7 +5,6 @@
 #include "readRequest.hpp"
 
 void Client::uploadFile() {
-    generatePath();
     writeFile();
     writeHeader(".html");
     response.response = response.header + response.body;
@@ -14,7 +13,6 @@ void Client::uploadFile() {
 }
 
 void Client::writeFile() {
-    std::cout << path << std::endl;
     std::ofstream file(path.c_str());
     if (!file.is_open()) {
         response.status = "500";

@@ -12,6 +12,6 @@ HttpResponse::HttpResponse(): status("200"), version("HTTP/1.1"), server("webser
 }
 
 void HttpResponse::print() {
-    std::cout << "RESPONSE:" << std::endl;
+    std::cout << std::endl << "RESPONSE:" << std::endl;
     std::cout << response << std::endl;
 }
