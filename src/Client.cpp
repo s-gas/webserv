@@ -49,7 +49,8 @@ bool Client::isMethodAllowed() {
 int Client::isEndpoint() {
     int fallback = -1;
     for (size_t i = 0; i < server->locations.size(); i++) {
-        if (request.endpoint.find(server->locations[i].endpoint) == 0) {
+        Location &location = server->locations[i];
+        if (request.endpoint.find(location.endpoint) == 0 && location.endpoint != "/") {
             return i;
         }
         if (server->locations[i].endpoint == "/") {
@@ -90,8 +91,10 @@ void Client::uploadFile() {
 void Client::generatePath() {
     Location location = server->locations[locationIndex];
     path = location.root;
+    std::cout << location.endpoint << std::endl;
     path += location.endpoint == "/" ? request.endpoint : location.endpoint;
     if (request.file == "") path += location.index;
+    std::cout << location.index << std::endl;
 }
 
 void Client::readFile() {
@@ -109,6 +112,7 @@ void Client::readFile() {
 }
 
 void Client::writeFile() {
+    std::cout << path << std::endl;
     std::ofstream file(path.c_str());
     if (!file.is_open()) {
         response.status = "500";
