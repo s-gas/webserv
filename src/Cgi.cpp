@@ -1,4 +1,5 @@
 #include "Cgi.hpp"
+#include "Client.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <sys/stat.h>
@@ -8,16 +9,20 @@
 // public ----------------------------------------------------------------------
 
 /* next to-dos:
- * - constructor / destructor rework (use malloc only)
  * - set all variables within the constructor
  * - setting root and interpreters during config parsing
  * - build execute within the epoll, implement timeout
-*/
+ */
 
 Cgi::Cgi(HttpRequest &request, Location &location) {
+  envArr = NULL;
+  argArr = NULL;
   root = location.root;
   interpreter = location.cgi;
-  initEnv(request);
+  scriptName = request.file;
+  setScriptFileName(request, location);
+  setEnvArr(request);
+  setArgArr();
 }
 
 Cgi::~Cgi() {
@@ -34,14 +39,14 @@ std::string Cgi::execute() {
   int pipeCToP[] = {-1, -1}; // Child -> Parent
   if (pipe(pipePToC) == -1 || pipe(pipeCToP) == -1) {
     closePipes(pipePToC, pipeCToP);
-    throw std::runtime_error("Cgi-Piping failed");
+    throw std::runtime_error("CGI: Piping failed");
   }
 
   // Forking
   pid_t pid = fork();
   if (pid == -1) {
     closePipes(pipePToC, pipeCToP);
-    throw std::runtime_error("Cgi-Forking failed");
+    throw std::runtime_error("CGI: Forking failed");
   }
 
   // Child
@@ -59,7 +64,7 @@ std::string Cgi::execute() {
   close(pipePToC[0]);
   close(pipeCToP[1]);
   if (!envMap["REQUEST_METHOD"].empty() && envMap["REQUEST_METHOD"] == "POST") {
-//    write(pipePToC[1], request.body.c_str(), request.body.size());
+    //    write(pipePToC[1], request.body.c_str(), request.body.size());
   }
   close(pipePToC[1]);
 
@@ -76,50 +81,48 @@ std::string Cgi::execute() {
 
 // private ---------------------------------------------------------------------
 
+void Cgi::setScriptFileName(HttpRequest &request, Location &location) {
+    scriptFileName = location.root;
+    scriptFileName += location.endpoint == "/" ? request.endpoint : location.endpoint;
+    if (request.file == "") scriptFileName += location.index;
+}
+
 // populating the env-Map
-void Cgi::initEnv(HttpRequest &request) {
-  std::string path = request.endpoint;
-  std::string query = "";
-  size_t questionMarkPos = path.find("?");
-  if (questionMarkPos != std::string::npos) {
-    query = path.substr(questionMarkPos + 1);
-    path = path.substr(0, questionMarkPos);
-  }
+void Cgi::setEnvArr(HttpRequest &request) {
   envMap["GATEWAY_INTERFACE"] = "CGI/1.1";
-  envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
-  envMap["SERVER_SOFTWARE"] = "42webserv/1.0";
+  envMap["SERVER_PROTOCOL"] = request.version;
   envMap["REQUEST_METHOD"] = request.method;
-  envMap["QUERY_STRING"] = queryString; // Everthing after ?
   envMap["CONTENT_LENGTH"] = request.contentLengthString();
   envMap["CONTENT_TYPE"] = request.contentType;
   envMap["SCRIPT_NAME"] = scriptName; // path including .file
-  envMap["SCRIPT_FILENAME"] = root + scriptName;
-  envMap["PATH_INFO"] = pathInfo; // trailing path after .file
-  envMap["PATH_TRANSLATED"] = root + pathInfo;
+  envMap["SCRIPT_FILENAME"] = scriptFileName;
   envMap["REDIRECT_STATUS"] = "200";
+  //  envMap["QUERY_STRING"] = queryString; // Everthing after ?
+  //  envMap["PATH_INFO"] = pathInfo; // trailing path after .file
+  //  envMap["PATH_TRANSLATED"] = root + pathInfo;
 }
 
-void Cgi::initArgs(const std::string &interpreterPath) {
-  argArr = static_cast<char **>(malloc(sizeof(char *) * 3));
-  argArr[0] = strdup(interpreterPath.c_str());
-  if (!argArr[0])
-    throw std::runtime_error("Malloc failed");
-//  argArr[1] = strdup(scriptPath.c_str());
-  if (!argArr[1]) {
-    free(argArr[0]);
-    throw std::runtime_error("Malloc failed");
+void Cgi::setArgArr() {
+  size_t lastDot = scriptName.find_last_of(".");
+  if (lastDot == std::string::npos) {
+    throw std::runtime_error("CGI: No file extension found");
   }
+  std::string fileExt = scriptName.substr(lastDot);
 
+  if (interpreter.find(fileExt) == interpreter.end()) {
+    throw std::runtime_error("CGI: No interpreter configured for " + fileExt);
+  }
+  std::string binPath = interpreter[fileExt];
+
+  argArr = new char *[3];
+
+  argArr[0] = new char[binPath.size() + 1];
+  std::strcpy(argArr[0], binPath.c_str());
+
+  std::string fullScriptPath = root + scriptName;
+  argArr[1] = new char[fullScriptPath.size() + 1];
+  std::strcpy(argArr[1], fullScriptPath.c_str());
   argArr[2] = NULL;
-}
-
-void Cgi::freeArg() {
-  if (argArr) {
-    for (size_t i = 0; argArr[i]; ++i) {
-      free(argArr[i]);
-    }
-    free(argArr);
-  }
 }
 
 char **Cgi::mapToArr(std::map<std::string, std::string> &m) {
