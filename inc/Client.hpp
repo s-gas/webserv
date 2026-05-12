@@ -18,6 +18,7 @@ public:
     Client(Server &s, int clientFd);
     bool handleData();
     void serveFile();
+    void serveCGI();
     void uploadFile();
     bool isRequestValid();
     bool isMethodAllowed();

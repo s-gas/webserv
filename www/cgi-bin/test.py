@@ -11,16 +11,4 @@ body = """<html>
 </body>
 </html>"""
 
-# 1. Status Line
-print("HTTP/1.1 200 OK")
-
-# 2. Headers
-print("Server: webserv")
-print("Content-Type: text/html")
-print(f"Content-Length: {len(body)}")
-
-# 3. The mandatory empty line that separates headers from body
-print("")
-
-# 4. The actual content
 sys.stdout.write(body)

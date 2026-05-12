@@ -16,7 +16,7 @@ public:
 
 private:
   std::string root;
-  std::map<std::string, std::string> interpreter;
+  std::map<std::string, std::vector<std::string> > interpreter;
   std::map<std::string, std::string> envMap;
   std::string scriptName;
   std::string scriptFileName;
@@ -29,6 +29,7 @@ private:
   void setEnvArr(HttpRequest &request);
   void setArgArr();
   char **mapToArr(std::map<std::string, std::string> &m);
+  char **vectorToArr(std::vector<std::string> &v);
   static void freeArr(char **&arr);
   static void closePipes(int *pipe1, int *pipe2);
 

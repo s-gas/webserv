@@ -1,4 +1,5 @@
 #include "Cgi.hpp"
+#include "Log.hpp"
 #include "Client.hpp"
 #include <cstdlib>
 #include <cstring>
@@ -19,7 +20,7 @@ Cgi::Cgi(HttpRequest &request, Location &location) {
   argArr = NULL;
   root = location.root;
   interpreter = location.cgi;
-  scriptName = request.file;
+  scriptName = request.file.empty() ? location.index : request.file;
   setScriptFileName(request, location);
   setEnvArr(request);
   setArgArr();
@@ -83,8 +84,9 @@ std::string Cgi::execute() {
 
 void Cgi::setScriptFileName(HttpRequest &request, Location &location) {
     scriptFileName = location.root;
+    LOG_INFO << "location.endpoint = " << location.endpoint;
     scriptFileName += location.endpoint == "/" ? request.endpoint : location.endpoint;
-    if (request.file == "") scriptFileName += location.index;
+    scriptFileName += request.file.empty() ? location.index : request.file;
 }
 
 // populating the env-Map
@@ -112,17 +114,32 @@ void Cgi::setArgArr() {
   if (interpreter.find(fileExt) == interpreter.end()) {
     throw std::runtime_error("CGI: No interpreter configured for " + fileExt);
   }
-  std::string binPath = interpreter[fileExt];
+  std::vector<std::string> args = interpreter[fileExt];
+  args.push_back(scriptFileName);
 
+  argArr = vectorToArr(args);
+  /*
   argArr = new char *[3];
 
   argArr[0] = new char[binPath.size() + 1];
   std::strcpy(argArr[0], binPath.c_str());
 
-  std::string fullScriptPath = root + scriptName;
+  std::string fullScriptPath = scriptFileName;
   argArr[1] = new char[fullScriptPath.size() + 1];
   std::strcpy(argArr[1], fullScriptPath.c_str());
   argArr[2] = NULL;
+  */
+}
+
+char **Cgi::vectorToArr(std::vector<std::string> &v) {
+  char **arr = new char *[v.size() + 1];
+
+  for (size_t i = 0; i < v.size(); ++i) {
+    arr[i] = new char[v[i].size() + 1];
+    std::strcpy(arr[i], v[i].c_str());
+  }
+  arr[v.size()] = NULL;
+  return arr;
 }
 
 char **Cgi::mapToArr(std::map<std::string, std::string> &m) {

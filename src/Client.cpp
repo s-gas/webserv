@@ -16,8 +16,7 @@ bool Client::handleData() {
   if (!isRequestValid()) {
       serveFile();
   } else if (isCgi()) {
-      response.response = Cgi(request, server->locations[locationIndex]).execute();
-      write(fd, response.response.c_str(), response.response.size());
+      serveCGI();
   } else {
       if (request.method == "GET") serveFile();
       else if (request.method == "POST") uploadFile();
@@ -75,6 +74,14 @@ void Client::serveFile() {
         generatePath();
         readFile();
     }
+    writeHeader(".html");
+    response.response = response.header + response.body;
+    response.print();
+    write(fd, response.response.c_str(), response.response.size());
+}
+
+void Client::serveCGI() {
+    response.body = Cgi(request, server->locations[locationIndex]).execute();
     writeHeader(".html");
     response.response = response.header + response.body;
     response.print();
