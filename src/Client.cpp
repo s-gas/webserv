@@ -28,7 +28,7 @@ bool Client::isRequestValid() {
         response.status = "400";
         response.error = true;
     } else if ((locationIndex = isEndpoint()) == -1) {
-        response.status = "405";
+        response.status = "404";
         response.error = true;
     } else if (isMethodAllowed() == false) {
         response.status = "405";
