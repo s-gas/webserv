@@ -41,6 +41,7 @@ std::vector<std::string> parseContent(std::string &line) {
 }
 
 std::string normalize(std::string str) {
+    if (str.find(".") != std::string::npos) return str;
     return str.size() == 0 || str[str.size() - 1] == '/' ? str : str + '/';
 }
 

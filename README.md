@@ -159,6 +159,18 @@ Some examples:
 | `http://localhost:1024/about/`| `www/about/index.html`|
 
 
+## HTTP request endpoints
+
+HTTP request endpoints are normalized by appending `/` if the endpoint does not contain any dot (`.`).
+
+For this reason, endpoints with directory names that contain a dot (`.`) in their name must also include the trailing `/`.
+
+The following HTTP request would not be interpreted correctly:
+
+```bash
+http://<ip>:<port>/directory.name
+```
+
 ## How to run
 
 Clone the repository:
