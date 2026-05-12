@@ -171,6 +171,8 @@ The following HTTP request would not be interpreted correctly:
 http://<ip>:<port>/directory.name
 ```
 
+The endpoint would be interpreted as a file name and, if not found, the server will return `404`.
+
 ## How to run
 
 Clone the repository:
@@ -210,7 +212,7 @@ docker build -t webserv:1 .
 Run the container:
 
 ```bash
-docker run --rm -d -p 8080:8080 --name webserv webserv:1
+docker run --rm -d -p <host_port>:<container_port> --name webserv webserv:1
 ```
 
 This will run the program with `conf-files/webserv.conf` as argument.

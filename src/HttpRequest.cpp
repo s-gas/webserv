@@ -14,6 +14,7 @@ HttpRequest::HttpRequest(std::string str) : rawString(str), method(""), version(
             std::vector<std::string> words = parseContent(line);
             method = words[0];
             endpoint = normalize(words[1]);
+            setDirectoryAndFile();
             version = words[2];
         } else if (isHeaderField("Content-Type: ", line)) {
             std::vector<std::string> words = parseContent(line);
@@ -26,6 +27,18 @@ HttpRequest::HttpRequest(std::string str) : rawString(str), method(""), version(
         }
         i++;
     }
+}
+
+void HttpRequest::setDirectoryAndFile() {
+    if (endpoint.size() == 0) return;
+    if (endpoint[endpoint.size() - 1] == '/') {
+        directory = endpoint;
+        file = "";
+        return;
+    }
+    size_t lastSlash = endpoint.rfind('/');
+    directory = endpoint.substr(0, lastSlash + 1);
+    file = endpoint.substr(lastSlash + 1);
 }
 
 void HttpRequest::print() {

@@ -12,6 +12,8 @@ public:
     std::string rawString;
     std::string method;
     std::string endpoint;
+    std::string directory;
+    std::string file;
     std::string version;
     std::string contentType;
     std::size_t contentLength;
@@ -20,6 +22,7 @@ public:
     HttpRequest();
     HttpRequest(std::string rawString);
 
+    void setDirectoryAndFile();
     void print();
 };
 
