@@ -57,8 +57,12 @@ int Client::isEndpoint() {
 }
 
 void Client::serveFile() {
-    generatePath();
-    readFile();
+    if (response.error == true) {
+        writeError();
+    } else {
+        generatePath();
+        readFile();
+    }
     writeHeader(".html");
     response.response = response.header + response.body;
     response.print();
