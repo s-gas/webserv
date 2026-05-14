@@ -2,7 +2,6 @@
 # define HTTP_HPP
 
 #include <cstddef>
-#include <iostream>
 #include <sstream>
 #include <vector>
 #include <map>

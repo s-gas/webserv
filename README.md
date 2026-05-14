@@ -229,7 +229,7 @@ docker build -t webserv:1 .
 Run the container:
 
 ```bash
-docker run --rm -d -p <hostport>:<container_port> --name webserv webserv:1
+docker run --rm -d -p <host_port>:<container_port> --name webserv webserv:1
 ```
 
 This will run the program with `conf-files/webserv.conf` as argument.

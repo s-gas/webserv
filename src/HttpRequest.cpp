@@ -1,7 +1,7 @@
 #include "Http.hpp"
 #include "readRequest.hpp"
 #include <cctype>
-#include <ctype.h>
+#include <iostream>
 
 HttpRequest::HttpRequest() : method(""), version(""), contentType(""), contentLength(0), body("") {}
 

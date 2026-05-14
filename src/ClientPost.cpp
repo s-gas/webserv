@@ -1,8 +1,6 @@
 #include "Client.hpp"
 #include "Log.hpp"
-#include "Server.hpp"
 #include "defines.hpp"
-#include "readRequest.hpp"
 
 void Client::writeFile() {
     LOG_INFO << "Attempting to POST/Upload to path: " << path;

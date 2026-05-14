@@ -1,7 +1,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
-#include "readRequest.hpp"
 
 Client::Client()
   : server(NULL), locationIndex(-1), fd(-1), cgiReadFd(-1),

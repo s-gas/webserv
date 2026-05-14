@@ -1,6 +1,5 @@
 #include "Http.hpp"
-#include <fstream>
-#include <sstream>
+#include <iostream>
 
 HttpResponse::HttpResponse(): status("200"), version("HTTP/1.1"), server("webserv\r\n"), emptyLine("\r\n"), error(false){
     statuses["200"] = "OK";

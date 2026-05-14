@@ -1,8 +1,6 @@
 #include "Client.hpp"
-#include "Log.hpp"
 #include "Server.hpp"
-#include "defines.hpp"
-#include "readRequest.hpp"
+#include <fstream>
 
 void Client::writeError() {
     std::string path;
