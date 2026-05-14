@@ -16,6 +16,7 @@ DEP_SRCS    =   checkExtension.cpp \
 				parseConfigUtils.cpp \
 				readFile.cpp \
 				Block.cpp \
+				Cgi.cpp \
 				Config.cpp \
 				Server.cpp \
 				Client.cpp \
