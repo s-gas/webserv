@@ -19,6 +19,7 @@ Config::~Config() {
     close(_epollFd);
   }
 }
+
 // Methods
 
 void Config::addChild(Server &server) { this->_servers.push_back(server); }

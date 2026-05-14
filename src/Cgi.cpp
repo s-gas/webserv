@@ -10,8 +10,6 @@
 // public ----------------------------------------------------------------------
 
 /* next to-dos:
- * - set all variables within the constructor
- * - setting root and interpreters during config parsing
  * - build execute within the epoll, implement timeout
  */
 
