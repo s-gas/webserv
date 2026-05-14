@@ -17,17 +17,17 @@ public:
   static void setLogFile(const std::string &filename);
 
   template <typename T> Log &operator<<(const T &msg) {
-    _ss << msg;
+    ss << msg;
     return *this;
   }
 
 private:
-  LogLevel _level;
-  std::stringstream _ss;
+  LogLevel level;
+  std::stringstream ss;
 
   static std::ofstream _fileStream;
 
-  static void log(LogLevel level, const std::string &msg);
+  static void log(LogLevel l, const std::string &msg);
 
   // Rest of OFC
   Log();

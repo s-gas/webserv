@@ -11,38 +11,38 @@
 
 #define BUF_SIZE 1024
 
-Config::Config() : Block(MAIN), _epollFd(-1){}
+Config::Config() : Block(MAIN), epollFd(-1){}
 
 Config::~Config() {
-  if (_epollFd != -1) {
-    LOG_INFO << "Closing _epollFd";
-    close(_epollFd);
+  if (epollFd != -1) {
+    LOG_INFO << "Closing epollFd";
+    close(epollFd);
   }
 }
 
 // Methods
 
-void Config::addChild(Server &server) { this->_servers.push_back(server); }
+void Config::addChild(Server &server) { this->servers.push_back(server); }
 
 int Config::init() {
   Log::setLogFile("webserv.log");
-  _epollFd = epoll_create(1);
-  if (_epollFd == ERROR) {
+  epollFd = epoll_create(1);
+  if (epollFd == ERROR) {
     if (errno == EINTR)
       return ERROR;
     throw std::runtime_error("epoll_create() failed");
   }
 
   // Loop through all server blocks
-  for (size_t i = 0; i < _servers.size(); ++i) {
-    _servers[i].init();
+  for (size_t i = 0; i < servers.size(); ++i) {
+    servers[i].init();
 
-    for (size_t j = 0; j < _servers[i]._serverFd.size(); ++j) {
-      int fd = _servers[i]._serverFd[j];
+    for (size_t j = 0; j < servers[i].serverFd.size(); ++j) {
+      int fd = servers[i].serverFd[j];
 
-      _event.events = EPOLLIN;
-      _event.data.fd = fd;
-      if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &_event) == ERROR) {
+      event.events = EPOLLIN;
+      event.data.fd = fd;
+      if (epoll_ctl(epollFd, EPOLL_CTL_ADD, fd, &event) == ERROR) {
         if (errno == EINTR)
           return ERROR;
         throw std::runtime_error("epoll_ctl() failed");
@@ -57,7 +57,7 @@ void Config::run() {
   int event_count;
 
   while (SignalState::serverRunning) {
-    event_count = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
+    event_count = epoll_wait(epollFd, events, MAX_EVENTS, -1);
     if (event_count == ERROR) {
       if (errno == EINTR)
         return;
@@ -65,7 +65,7 @@ void Config::run() {
     }
 
     for (int i = 0; i < event_count; i++) {
-      int fd = _events[i].data.fd;
+      int fd = events[i].data.fd;
       int serverIndex = isServerFd(fd);
       if (serverIndex != -1)
         handleNewConnections(fd, serverIndex);
@@ -77,7 +77,7 @@ void Config::run() {
 }
 
 void Config::removeClient(int fd) {
-    if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, NULL)) {
+    if (epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL)) {
         LOG_ERROR << "Failed to remove FD " << fd;
     }
     close(clients[fd].fd);
@@ -86,9 +86,9 @@ void Config::removeClient(int fd) {
 }
 
 int Config::isServerFd(int fd) {
-  for (size_t i = 0; i < _servers.size(); ++i) {
-    for (size_t j = 0; j < _servers[i]._serverFd.size(); ++j) {
-      if (fd == _servers[i]._serverFd[j]) {
+  for (size_t i = 0; i < servers.size(); ++i) {
+    for (size_t j = 0; j < servers[i].serverFd.size(); ++j) {
+      if (fd == servers[i].serverFd[j]) {
         return i;
       }
     }
@@ -106,7 +106,7 @@ void Config::handleNewConnections(int serverFd, int serverIndex) {
     clientFd = accept(serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
     if (clientFd < 0)
       break;
-    clients[clientFd] = Client(_servers[serverIndex], clientFd);
+    clients[clientFd] = Client(servers[serverIndex], clientFd);
     if (fcntl(clientFd, F_SETFL, O_NONBLOCK) == ERROR) {
       LOG_ERROR << "fcntl() on client failed";
       close(clientFd);
@@ -115,7 +115,7 @@ void Config::handleNewConnections(int serverFd, int serverIndex) {
     LOG_INFO << "New client connected on FD: " << clientFd;
     clientEvent.events = EPOLLIN;
     clientEvent.data.fd = clientFd;
-    if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientFd, &clientEvent) == ERROR) {
+    if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientFd, &clientEvent) == ERROR) {
       LOG_ERROR << "epoll_ctl() on client failed";
       close(clientFd);
     }

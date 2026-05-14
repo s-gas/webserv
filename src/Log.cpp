@@ -6,11 +6,11 @@ std::ofstream Log::_fileStream;
 
 // public ----------------------------------------------------------------------
 
-Log::Log(LogLevel level) : _level(level) {}
+Log::Log(LogLevel l) : level(l) {}
 
 Log::~Log() {
   try {
-    log(_level, _ss.str());
+    log(level, ss.str());
   } catch (...) {
   }
 }
@@ -25,12 +25,12 @@ void Log::setLogFile(const std::string &filename) {
 
 // private ---------------------------------------------------------------------
 
-void Log::log(LogLevel level, const std::string &msg) {
+void Log::log(LogLevel l, const std::string &msg) {
   std::string label;
   std::string color;
-  std::ostream &outStream = (level == ERROR) ? std::cerr : std::cout;
+  std::ostream &outStream = (l == ERROR) ? std::cerr : std::cout;
 
-  switch (level) {
+  switch (l) {
   case DEBUG:
     label = "[DEBUG] ";
     color = CYAN;

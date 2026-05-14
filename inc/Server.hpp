@@ -44,9 +44,9 @@ public:
 
 class Server: public Block {
 public:
-    std::vector<int> _port;
-    std::vector<int> _serverFd;
-    std::vector<struct sockaddr_in> _addr;
+    std::vector<int> port;
+    std::vector<int> serverFd;
+    std::vector<struct sockaddr_in> addr;
     std::vector<Location> locations;
 
     Server();
@@ -59,8 +59,9 @@ public:
 
 class Config: public Block {
 public:
-    std::vector<Server> _servers;
+    std::vector<Server> servers;
     std::map<int, Client> clients;
+    std::map<int, int> cgiToClient;
 
     Config();
     ~Config();
@@ -73,9 +74,9 @@ public:
     void removeClient(int fd);
 
 private:
-    int _epollFd;
-    struct epoll_event _event;
-    struct epoll_event _events[MAX_EVENTS];
+    int epollFd;
+    struct epoll_event event;
+    struct epoll_event events[MAX_EVENTS];
 };
 
 #endif
