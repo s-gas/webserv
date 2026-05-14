@@ -12,3 +12,10 @@ void Client::writeError() {
         file.close();
     }
 }
+
+void Client::prepareErrorResponse(std::string code) {
+  if (!code.empty()) response.status = code;
+  writeError();
+  writeHeader(".html");
+  responseRaw = response.header + response.body;
+}

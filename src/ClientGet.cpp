@@ -14,3 +14,11 @@ void Client::readFile() {
         writeError();
     }
 }
+
+void Client::prepareFileResponse() {
+  generatePath();
+  readFile();
+  writeHeader(".html");
+  responseRaw = response.header + response.body;
+  state = SENDING_RESPONSE;
+}

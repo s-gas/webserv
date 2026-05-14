@@ -18,3 +18,10 @@ void Client::writeFile() {
     file << request.body;
     file.close();
 }
+
+void Client::prepareUploadResponse() {
+  writeFile();
+  writeHeader(".html");
+  responseRaw = response.header + response.body;
+  state = SENDING_RESPONSE;
+}
