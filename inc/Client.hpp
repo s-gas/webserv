@@ -20,6 +20,7 @@ public:
     void serveFile();
     void serveCGI();
     void uploadFile();
+    void deleteFile();
     bool isRequestValid();
     bool isMethodAllowed();
     int isEndpoint();

@@ -20,8 +20,13 @@ SRC_FILES	= $(addsuffix .cpp, main \
 								Block \
 								Config \
 								Server \
-								Client \
 								Cgi \
+								Client \
+								ClientCGI \
+								ClientDelete \
+								ClientError \
+								ClientGet \
+								ClientPost \
 								Location \
 								Log \
 								checkExtension \

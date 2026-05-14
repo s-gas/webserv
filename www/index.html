@@ -17,13 +17,14 @@
     <body>
         <h2>webserv</h2>
         <p>Welcome to the main page of webserv!</p>
+        <p>Use this input form for creating a "sentence.txt" file with a custom content:</p>
         <form method="POST" action="/submit">
-            <label for="name">Name:</label>
+            <label for="sentence">Sentence:</label>
             <input
                 type="text"
-                id="name"
-                name="name"
-                placeholder="Enter your name"
+                id="sentence"
+                name="sentence"
+                placeholder="Enter a sentence"
             />
             <button type="submit">Submit</button>
         </form>

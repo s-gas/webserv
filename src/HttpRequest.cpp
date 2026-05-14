@@ -42,7 +42,7 @@ void HttpRequest::setDirectoryAndFile() {
 }
 
 void HttpRequest::print() {
-    std::cout << "REQUEST:" << std::endl;
+    std::cout << std::endl << "REQUEST:" << std::endl;
     std::cout << rawString << std::endl;
 }
 
