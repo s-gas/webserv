@@ -23,6 +23,7 @@ enum Status { SUCCESS = 0, FAILURE = 1, ERROR = -1 };
 
 enum ClientState {
   READING_REQUEST,
+  WRITIN_CGI,
   PROCESSING_CGI,
   SENDING_RESPONSE,
   FINISHED

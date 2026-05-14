@@ -15,7 +15,6 @@ Cgi::Cgi(HttpResponse &response, HttpRequest &request, Location &location)
   argArr = NULL;
   root = location.root;
   interpreter = location.cgi;
-  // scriptName = request.file.empty() ? location.index : request.file;
   scriptName = request.file;
   setScriptFileName(request, location);
   setEnvArr(request);
@@ -29,7 +28,7 @@ Cgi::~Cgi() {
     freeArr(argArr);
 }
 
-int Cgi::startAsync() {
+int Cgi::execScript() {
   checkScriptFileName();
   envArr = mapToArr(envMap);
 
@@ -159,13 +158,4 @@ void Cgi::freeArr(char **&arr) {
   }
   delete[] arr;
   arr = NULL;
-}
-
-void Cgi::closePipes(int *pipe1, int *pipe2) {
-  for (size_t i = 0; i < 2; ++i) {
-    if (pipe1[i] != -1)
-      close(pipe1[i]);
-    if (pipe2[i] != -1)
-      close(pipe2[i]);
-  }
 }

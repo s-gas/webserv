@@ -31,8 +31,8 @@ public:
 
     // State Machine
     void handleAction(int triggeredFd);
-    void readRequestChunk();
     void processRequest();
+    void readRequestChunk();
     void readCgiChunk();
     void sendResponseChunk();
     void setupCgi();
@@ -46,6 +46,7 @@ public:
     ClientState state;
     pid_t cgiPid;
     time_t startTime;
+    time_t lastActTime;
     std::string requestRaw;
     std::string responseRaw;
     size_t bytesSent;

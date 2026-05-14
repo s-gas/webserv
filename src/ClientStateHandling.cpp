@@ -8,7 +8,7 @@ void Client:: setupCgi() {
   try {
     Cgi cgiHandler(response, request, server->locations[locationIndex]);
 
-    cgiReadFd = cgiHandler.startAsync();
+    cgiReadFd = cgiHandler.execScript();
     cgiPid = cgiHandler.childPid;
     state = PROCESSING_CGI;
     startTime = time(NULL);
@@ -31,6 +31,7 @@ void Client::handleAction(int triggeredFd) {
 }
 
 void Client::readRequestChunk() {
+  lastActTime = time(NULL);
   char buffer[4096];
   ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
 
@@ -48,6 +49,7 @@ void Client::readRequestChunk() {
 
     size_t currentBodyLength = requestRaw.size() - (headerEnd + 4);
     if (currentBodyLength >= request.contentLength) {
+      request.body = requestRaw.substr(headerEnd + 4, request.contentLength);
       processRequest();
     }
   }
@@ -76,19 +78,27 @@ void Client::readCgiChunk() {
   ssize_t bytes = read(cgiReadFd, buffer, sizeof(buffer));
 
   if (bytes > 0) {
+    // normal read
     response.body.append(buffer, bytes);
     startTime = time(NULL);
-  } else {
+  } else if (bytes == 0) {
+    // finished read
     waitpid(cgiPid, NULL, WNOHANG);
     writeCgiHeader();
     responseRaw = response.header + response.body;
+    state = SENDING_RESPONSE;
+  } else {
+    // pipe error
+    waitpid(cgiPid, NULL, WNOHANG);
+    prepareErrorResponse("500");
     state = SENDING_RESPONSE;
   }
 }
 
 void Client::sendResponseChunk() {
+  lastActTime = time(NULL);
   ssize_t remaining = responseRaw.size() - bytesSent;
-  ssize_t sent = send(fd, responseRaw.c_str() + bytesSent, remaining, 0);
+  ssize_t sent = send(fd, responseRaw.c_str() + bytesSent, remaining, MSG_NOSIGNAL);
 
   if (sent >= 0) {
     bytesSent += sent;

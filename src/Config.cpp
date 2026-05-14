@@ -84,7 +84,7 @@ void Config::run() {
       throw std::runtime_error("epoll_wait() failed");
     }
 
-    checkCgiTimeouts();
+    checkTimeouts();
 
     for (int i = 0; i < event_count; ++i) {
       int fd = events[i].data.fd;
@@ -207,11 +207,15 @@ void Config::registerCgiPipe(int pipeFd, int clientFd) {
   }
 }
 
-void Config::checkCgiTimeouts() {
+void Config::checkTimeouts() {
   time_t now = time(NULL);
-  for (std::map<int, Client>::iterator it = clients.begin();
-       it != clients.end(); ++it) {
+
+  std::map<int, Client>::iterator it = clients.begin();
+  while (it != clients.end()) {
     Client &c = it->second;
+    int currentFd = it->first;
+
+    // check CGI Timeout (30 sec)
     if (c.is(PROCESSING_CGI) && (now - c.startTime > 30)) {
       LOG_ERROR << "CGI Timeout on client FD " << c.fd;
       if (c.cgiReadFd != -1) {
@@ -222,6 +226,14 @@ void Config::checkCgiTimeouts() {
       }
       c.handleTimeout();
       updateEpollEvent(c.fd, EPOLLOUT);
+      ++it;
+    // check client idle timeout
+    } else if (now - c.lastActTime > 60) {
+      LOG_INFO << "Idle Client Timeout. Disconnectin FD " << c.fd;
+      ++it;
+      removeClient(currentFd);
+    } else {
+      ++it;
     }
   }
 }

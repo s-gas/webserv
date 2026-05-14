@@ -4,11 +4,13 @@
 
 Client::Client()
   : server(NULL), locationIndex(-1), fd(-1), cgiReadFd(-1),
-    state(READING_REQUEST), cgiPid(-1), startTime(0), bytesSent(0) {}
+    state(READING_REQUEST), cgiPid(-1), startTime(0), lastActTime(0),
+    bytesSent(0) {}
 
 Client::Client(Server &s, int clientFd)
   : server(&s), locationIndex(-1), fd(clientFd), cgiReadFd(-1),
-    state(READING_REQUEST), cgiPid(-1), startTime(0), bytesSent(0) {}
+    state(READING_REQUEST), cgiPid(-1), startTime(0), lastActTime(0),
+    bytesSent(0) {}
 
 bool Client::isRequestValid() {
     if (request.version != response.version) {
