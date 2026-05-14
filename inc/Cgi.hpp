@@ -13,7 +13,7 @@ public:
   Cgi(HttpResponse &response, HttpRequest &request, Location &location);
   ~Cgi();
 
-  int execScript();
+  void execScript(int &readFd, int &writeFd);
 
 private:
   std::string root;
@@ -32,6 +32,7 @@ private:
   char **mapToArr(std::map<std::string, std::string> &m);
   char **vectorToArr(std::vector<std::string> &v);
   static void freeArr(char **&arr);
+  static void closePipes(int *pipe1, int *pipe2);
 
   Cgi(Cgi const &);
   Cgi &operator=(Cgi const &);

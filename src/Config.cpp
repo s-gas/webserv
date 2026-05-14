@@ -96,20 +96,23 @@ void Config::run() {
         if (cgiToClient.count(fd)) {
           int clientFd = cgiToClient[fd];
           clients[clientFd].prepareErrorResponse("500");
-          clients[clientFd].state = SENDING_RESPONSE;
+          clients[clientFd].state = S_RES;
           updateEpollEvent(clientFd, EPOLLOUT);
 
           epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
           close(fd);
           cgiToClient.erase(fd);
           clients[clientFd].cgiReadFd = -1;
+        } else if (cgiWriteToClient.count(fd)) {
+          int clientFd = cgiWriteToClient[fd];
+          epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+          close(fd);
+          cgiWriteToClient.erase(fd);
+          clients[clientFd].cgiWriteFd = -1;
+          clients[clientFd].state = P_CGI;
         } else if (clients.count(fd)) {
           removeClient(fd);
         }
-        continue;
-      } else if ((event_types & EPOLLHUP) && !cgiToClient.count(fd)) {
-        LOG_INFO << "Client hangup on FD: " << fd;
-        removeClient(fd);
         continue;
       }
 
@@ -126,7 +129,7 @@ void Config::run() {
 
         clients[clientFd].handleAction(fd);
 
-        if (prevState != SENDING_RESPONSE &&  clients[clientFd].is(SENDING_RESPONSE)) {
+        if (prevState != S_RES &&  clients[clientFd].is(S_RES)) {
           epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
           close(fd);
           cgiToClient.erase(fd);
@@ -134,24 +137,39 @@ void Config::run() {
           updateEpollEvent(clientFd, EPOLLOUT);
         }
 
-        if (clients[clientFd].is(FINISHED)) {
+        if (clients[clientFd].is(DONE)) {
           removeClient(clientFd);
         }
 
-        // C: Activity on client
+        // C: Activity on CGI Write Pipe
+      } else if (cgiWriteToClient.count(fd)) {
+        int clientFd = cgiWriteToClient[fd];
+        clients[clientFd].handleAction(fd);
+
+        if (clients[clientFd].is(P_CGI) || clients[clientFd].is(S_RES)) {
+          epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+          close(fd);
+          cgiWriteToClient.erase(fd);
+          clients[clientFd].cgiWriteFd = -1;
+        }
+
+        if (clients[clientFd].is(DONE)) {
+          removeClient(clientFd);
+        }
+        // D: Activity on client
       } else if (clients.count(fd)) {
         ClientState prevState = clients[fd].state;
         clients[fd].handleAction(fd);
 
-        if (prevState != PROCESSING_CGI && clients[fd].is(PROCESSING_CGI) && clients[fd].cgiReadFd != -1) {
-          registerCgiPipe(clients[fd].cgiReadFd, fd);
+        if (prevState != W_CGI && prevState != P_CGI && (clients[fd].is(W_CGI) || clients[fd].is(P_CGI))) {
+          registerCgiPipe(clients[fd]);
         }
 
-        if (prevState != SENDING_RESPONSE && clients[fd].is(SENDING_RESPONSE)) {
+        if (prevState != S_RES && clients[fd].is(S_RES)) {
           updateEpollEvent(fd, EPOLLOUT);
         }
 
-        if (clients[fd].is(FINISHED))
+        if (clients[fd].is(DONE))
           removeClient(fd);
       }
     }
@@ -179,6 +197,7 @@ void Config::handleNewConnections(int serverFd, int serverIndex) {
     clientFd = accept(serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
     if (clientFd < 0)
       break;
+    fcntl(clientFd, F_SETFD, FD_CLOEXEC);
     clients[clientFd] = Client(servers[serverIndex], clientFd);
     if (fcntl(clientFd, F_SETFL, O_NONBLOCK) == ERROR) {
       LOG_ERROR << "fcntl() on client failed";
@@ -195,15 +214,21 @@ void Config::handleNewConnections(int serverFd, int serverIndex) {
   }
 }
 
-void Config::registerCgiPipe(int pipeFd, int clientFd) {
-  cgiToClient[pipeFd] = clientFd;
+void Config::registerCgiPipe(Client &c) {
+  if (c.cgiReadFd != -1) {
+    cgiToClient[c.cgiReadFd] = c.fd;
+    struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = c.cgiReadFd;
+    epoll_ctl(epollFd, EPOLL_CTL_ADD, c.cgiReadFd, &ev);
+  }
 
-  struct epoll_event ev;
-  ev.events = EPOLLIN;
-  ev.data.fd = pipeFd;
-
-  if (epoll_ctl(epollFd, EPOLL_CTL_ADD, pipeFd, &ev) == ERROR) {
-    LOG_ERROR << "Failed to add CGI pipe to epoll";
+  if (c.cgiWriteFd != -1) {
+    cgiWriteToClient[c.cgiWriteFd] = c.fd;
+    struct epoll_event ev;
+    ev.events = EPOLLOUT;
+    ev.data.fd = c.cgiWriteFd;
+    epoll_ctl(epollFd, EPOLL_CTL_ADD, c.cgiWriteFd, &ev);
   }
 }
 
@@ -216,14 +241,9 @@ void Config::checkTimeouts() {
     int currentFd = it->first;
 
     // check CGI Timeout (30 sec)
-    if (c.is(PROCESSING_CGI) && (now - c.startTime > 30)) {
+    if ((c.is(P_CGI) || c.is(W_CGI)) && (now - c.startTime > 30)) {
       LOG_ERROR << "CGI Timeout on client FD " << c.fd;
-      if (c.cgiReadFd != -1) {
-        epoll_ctl(epollFd, EPOLL_CTL_DEL, c.cgiReadFd, NULL);
-        close(c.cgiReadFd);
-        cgiToClient.erase(c.cgiReadFd);
-        c.cgiReadFd = -1;
-      }
+      cleanUpClientCgi(c);
       c.handleTimeout();
       updateEpollEvent(c.fd, EPOLLOUT);
       ++it;
@@ -240,25 +260,38 @@ void Config::checkTimeouts() {
 
 void Config::removeClient(int fd) {
   if (clients.count(fd)) {
-    int cgiFd = clients[fd].cgiReadFd;
-    if (cgiFd != -1) {
-      epoll_ctl(epollFd, EPOLL_CTL_DEL, cgiFd, NULL);
-      close(cgiFd);
-      cgiToClient.erase(cgiFd);
-      clients[fd].cgiReadFd = -1;
-    }
+    Client &c = clients[fd];
 
-    if (clients[fd].cgiPid > 0) {
-      kill(clients[fd].cgiPid, SIGKILL);
-      waitpid(clients[fd].cgiPid, NULL, WNOHANG);
-    }
-
+    cleanUpClientCgi(c);
+    killCgiProcess(c);
     epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
     close(fd);
     clients.erase(fd);
-    LOG_INFO << "Client FD " << fd << " removed.";
+    LOG_INFO << "Client FD " << fd << " cleanly removed.";
   } else {
     epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
     close(fd);
+  }
+}
+
+void Config::removeCgiPipe(int &pipeFd, std::map<int, int> &pipeMap) {
+  if (pipeFd != -1) {
+    epoll_ctl(epollFd, EPOLL_CTL_DEL, pipeFd, NULL);
+    close(pipeFd);
+    pipeMap.erase(pipeFd);
+    pipeFd = -1;
+  }
+}
+
+void Config::cleanUpClientCgi(Client &c) {
+  removeCgiPipe(c.cgiWriteFd, cgiWriteToClient);
+  removeCgiPipe(c.cgiReadFd, cgiToClient);
+}
+
+void Config::killCgiProcess(Client &c) {
+  if (c.cgiPid > 0) {
+    kill(c.cgiPid, SIGKILL);
+    waitpid(c.cgiPid, NULL, WNOHANG);
+    c.cgiPid = -1;
   }
 }

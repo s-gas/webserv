@@ -28,41 +28,55 @@ Cgi::~Cgi() {
     freeArr(argArr);
 }
 
-int Cgi::execScript() {
+void Cgi::execScript(int &readFd, int &writeFd) {
   checkScriptFileName();
   envArr = mapToArr(envMap);
 
   // Piping
-  int pipeCToP[2];
-  if (pipe(pipeCToP) == -1) {
+  int pipePToC[2]; // Parent -> Child
+  int pipeCToP[2]; // Child -> Parent
+  if (pipe(pipeCToP) == -1 || pipe(pipePToC) == -1) {
+    closePipes(pipePToC, pipeCToP);
     status = "500";
     throw std::runtime_error("CGI: Pipe failed");
   }
+
   fcntl(pipeCToP[0], F_SETFL, O_NONBLOCK);
+  fcntl(pipePToC[1], F_SETFL, O_NONBLOCK);
 
   // Forking
   childPid = fork();
   if (childPid == -1) {
-    close(pipeCToP[0]);
-    close(pipeCToP[1]);
+    closePipes(pipePToC, pipeCToP);
     throw std::runtime_error("CGI: Fork failed");
   }
 
   // Child
   if (childPid == 0) {
-    if (dup2(pipeCToP[1], STDOUT_FILENO) == -1) {
-      close(pipeCToP[0]);
-      close(pipeCToP[1]);
+    close(pipePToC[1]);
+    close(pipePToC[0]);
+    if (dup2(pipePToC[0], STDOUT_FILENO) == -1 ||
+        dup2(pipeCToP[1], STDOUT_FILENO) == -1) {
       exit(1);
     }
+    close(pipeCToP[0]);
+    close(pipePToC[1]);
     if (execve(argArr[0], argArr, envArr) == -1) {
       exit(1);
     }
   }
 
   // Parent
+  close(pipePToC[0]);
   close(pipeCToP[1]);
-  return pipeCToP[0];
+
+  readFd = pipeCToP[0];
+  if (envMap["REQUEST_METHOD"] == "POST") {
+    writeFd = pipePToC[1];
+  } else {
+    close(pipePToC[1]);
+    writeFd = -1;
+  }
 }
 
 // private ---------------------------------------------------------------------
@@ -158,4 +172,13 @@ void Cgi::freeArr(char **&arr) {
   }
   delete[] arr;
   arr = NULL;
+}
+
+void Cgi::closePipes(int *pipe1, int *pipe2) {
+  for (size_t i = 0; i < 2; ++i) {
+    if (pipe1[i] != -1)
+      close(pipe1[i]);
+    if (pipe2[i] != -1)
+      close(pipe2[i]);
+  }
 }

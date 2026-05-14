@@ -22,11 +22,6 @@ void Client::prepareErrorResponse(std::string code) {
 }
 
 void Client::handleTimeout() {
-  if (cgiPid > 0) {
-    kill(cgiPid, SIGKILL);
-    waitpid(cgiPid, NULL, WNOHANG);
-  }
-
   prepareErrorResponse("504");
-  state = SENDING_RESPONSE;
+  state = S_RES;
 }

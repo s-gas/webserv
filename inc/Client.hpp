@@ -14,6 +14,8 @@ public:
     std::string path;
     int locationIndex;
     int fd;
+    int cgiWriteFd;
+    size_t cgiBytesWritten;
 
     Client();
     Client(Server &s, int clientFd);
@@ -32,6 +34,7 @@ public:
     // State Machine
     void handleAction(int triggeredFd);
     void processRequest();
+    void writeCgiChunk();
     void readRequestChunk();
     void readCgiChunk();
     void sendResponseChunk();
@@ -50,6 +53,9 @@ public:
     std::string requestRaw;
     std::string responseRaw;
     size_t bytesSent;
+
+private:
+    void init();
 };
 
 #endif

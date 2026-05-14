@@ -1,31 +1,38 @@
-#include "Client.hpp"
 #include "Cgi.hpp"
+#include "Client.hpp"
 #include "Log.hpp"
 #include "defines.hpp"
 #include <sys/wait.h>
 
-void Client:: setupCgi() {
+void Client::setupCgi() {
   try {
     Cgi cgiHandler(response, request, server->locations[locationIndex]);
 
-    cgiReadFd = cgiHandler.execScript();
+    cgiHandler.execScript(cgiReadFd, cgiWriteFd);
     cgiPid = cgiHandler.childPid;
-    state = PROCESSING_CGI;
+    if (cgiWriteFd != -1 && !request.body.empty()) {
+      state = W_CGI;
+    } else {
+      state = P_CGI;
+    }
     startTime = time(NULL);
     bytesSent = 0;
+    cgiBytesWritten = 0;
   } catch (const std::exception &e) {
     LOG_ERROR << "CGI Setup failed: " << e.what();
     prepareErrorResponse(response.status);
-    state = SENDING_RESPONSE;
+    state = S_RES;
   }
 }
 
 void Client::handleAction(int triggeredFd) {
-  if (state == READING_REQUEST) {
+  if (state == R_REQ) {
     readRequestChunk();
-  } else if (state == PROCESSING_CGI && triggeredFd == cgiReadFd) {
+  } else if (state == W_CGI && triggeredFd == cgiWriteFd) {
+    writeCgiChunk();
+  } else if (state == P_CGI && triggeredFd == cgiReadFd) {
     readCgiChunk();
-  } else if (state == SENDING_RESPONSE) {
+  } else if (state == S_RES) {
     sendResponseChunk();
   }
 }
@@ -36,8 +43,8 @@ void Client::readRequestChunk() {
   ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
 
   if (bytes <= 0) {
-    state = FINISHED;
-    return ;
+    state = DONE;
+    return;
   }
   requestRaw.append(buffer, bytes);
 
@@ -58,7 +65,7 @@ void Client::readRequestChunk() {
 void Client::processRequest() {
   if (!isRequestValid()) {
     prepareErrorResponse(response.status);
-    state = SENDING_RESPONSE;
+    state = S_RES;
   } else if (isCgi()) {
     setupCgi();
   } else {
@@ -70,6 +77,28 @@ void Client::processRequest() {
     } else if (request.method == "DELETE") {
       prepareDeleteResponse();
     }
+  }
+}
+
+void Client::writeCgiChunk() {
+  ssize_t remaining = request.body.size() - cgiBytesWritten;
+  if (remaining <= 0) {
+    state = P_CGI;
+    return;
+  }
+
+  ssize_t sent =
+      write(cgiWriteFd, request.body.c_str() + cgiBytesWritten, remaining);
+
+  if (sent > 0) {
+    cgiBytesWritten += sent;
+    if (cgiBytesWritten >= request.body.size()) {
+      state = P_CGI;
+    }
+    lastActTime = time(NULL);
+  } else {
+    prepareErrorResponse("500");
+    state = S_RES;
   }
 }
 
@@ -86,30 +115,29 @@ void Client::readCgiChunk() {
     waitpid(cgiPid, NULL, WNOHANG);
     writeCgiHeader();
     responseRaw = response.header + response.body;
-    state = SENDING_RESPONSE;
+    state = S_RES;
   } else {
     // pipe error
     waitpid(cgiPid, NULL, WNOHANG);
     prepareErrorResponse("500");
-    state = SENDING_RESPONSE;
+    state = S_RES;
   }
 }
 
 void Client::sendResponseChunk() {
   lastActTime = time(NULL);
   ssize_t remaining = responseRaw.size() - bytesSent;
-  ssize_t sent = send(fd, responseRaw.c_str() + bytesSent, remaining, MSG_NOSIGNAL);
+  ssize_t sent =
+      send(fd, responseRaw.c_str() + bytesSent, remaining, MSG_NOSIGNAL);
 
   if (sent >= 0) {
     bytesSent += sent;
     if (bytesSent >= responseRaw.size()) {
-      state = FINISHED;
+      state = DONE;
     }
   } else {
-    state = FINISHED;
+    state = DONE;
   }
 }
 
-bool Client::is(ClientState s) {
-  return s == state;
-}
+bool Client::is(ClientState s) { return s == state; }

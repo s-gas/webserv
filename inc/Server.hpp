@@ -62,6 +62,7 @@ public:
     std::vector<Server> servers;
     std::map<int, Client> clients;
     std::map<int, int> cgiToClient;
+    std::map<int, int> cgiWriteToClient;
 
     Config();
     ~Config();
@@ -72,7 +73,10 @@ public:
     int isServerFd(int fd);
     void handleNewConnections(int serverFd, int serverIndex);
     void removeClient(int fd);
-    void registerCgiPipe(int pipeFd, int clientFd);
+    void removeCgiPipe(int &pipeFd, std::map<int, int> &pipeMap);
+    void cleanUpClientCgi(Client &c);
+    void killCgiProcess(Client &c);
+    void registerCgiPipe(Client &c);
     void checkTimeouts();
     void updateEpollEvent(int fd, uint32_t events);
 
