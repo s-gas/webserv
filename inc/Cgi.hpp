@@ -9,7 +9,7 @@
 class Cgi {
 
 public:
-  Cgi(HttpRequest &request, Location &location);
+  Cgi(HttpResponse &response, HttpRequest &request, Location &location);
   ~Cgi();
 
   std::string execute();
@@ -20,11 +20,11 @@ private:
   std::map<std::string, std::string> envMap;
   std::string scriptName;
   std::string scriptFileName;
-  // std::string pathInfo;    // trailing path after .file
-  // std::string queryString; // everything after ?
+  std::string &status;
   char **envArr;
   char **argArr;
 
+  void checkScriptFileName();
   void setScriptFileName(HttpRequest &request, Location &location);
   void setEnvArr(HttpRequest &request);
   void setArgArr();

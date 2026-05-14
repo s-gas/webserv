@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import sys
 
-# Define the body first to calculate length
 body = """<html>
 <head><title>Webserv CGI Test</title></head>
 <body>
@@ -11,4 +10,10 @@ body = """<html>
 </body>
 </html>"""
 
+# Header
+sys.stdout.write("Content-Type: text/html\r\n")
+sys.stdout.write(f"Content-Length: {len(body.encode('utf-8'))}\r\n")
+sys.stdout.write("\r\n") # The delimiter
+
+# Body
 sys.stdout.write(body)

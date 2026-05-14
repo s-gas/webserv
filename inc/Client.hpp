@@ -24,6 +24,7 @@ public:
     bool isMethodAllowed();
     int isEndpoint();
     void writeHeader(std::string extension);
+    void writeCgiHeader();
     void readFile();
     void writeFile();
     void generatePath();

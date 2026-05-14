@@ -51,7 +51,6 @@ int Client::isEndpoint() {
     for (size_t i = 0; i < server->locations.size(); i++) {
         Location &location = server->locations[i];
         if (request.endpoint.find(location.endpoint) == 0 && location.endpoint != "/") {
-            LOG_INFO << "i " << i;
             return i;
         }
         if (server->locations[i].endpoint == "/") {
@@ -81,8 +80,15 @@ void Client::serveFile() {
 }
 
 void Client::serveCGI() {
-    response.body = Cgi(request, server->locations[locationIndex]).execute();
-    writeHeader(".html");
+    try {
+        response.body = Cgi(response, request, server->locations[locationIndex]).execute();
+        writeCgiHeader();
+    } catch (const std::exception &e) {
+        LOG_ERROR << e.what();
+        response.error = true;
+        writeError();
+        writeHeader(".html");
+    }
     response.response = response.header + response.body;
     response.print();
     write(fd, response.response.c_str(), response.response.size());
@@ -155,12 +161,15 @@ void Client::writeHeader(std::string extension) {
     response.header = ss.str();
 }
 
+void Client::writeCgiHeader() {
+    std::ostringstream ss;
+    ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
+    ss << "Server: " << response.server;
+    response.header = ss.str();
+}
+
 bool Client::isCgi() {
     if (locationIndex == -1) return false;
     Location &location = server->locations[locationIndex];
-    LOG_INFO << "isCgi() = " << !location.cgi.empty();
-    LOG_INFO << "location.endpoint " << location.endpoint;
-    LOG_INFO << "location.root " << location.root;
-    LOG_INFO << "locationIndex " << locationIndex;
     return !location.cgi.empty();
 }
