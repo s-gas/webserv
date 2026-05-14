@@ -20,9 +20,7 @@ DEP_SRCS    =   checkExtension.cpp \
 				Config.cpp \
 				Server.cpp \
 				Client.cpp \
-				ClientCGI.cpp \
 				ClientStateHandling.cpp \
-				ClientDelete.cpp \
 				ClientError.cpp \
 				ClientGet.cpp \
 				ClientPost.cpp \
