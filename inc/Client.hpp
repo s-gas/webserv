@@ -2,6 +2,7 @@
 # define CLIENT_HPP
 
 #include "Http.hpp"
+#include "defines.hpp"
 
 class Server;
 
@@ -13,13 +14,6 @@ public:
     std::string path;
     int locationIndex;
     int fd;
-
-    enum ClientState {
-        READING_REQUEST,
-        PROCESSING_CGI,
-        SENDING_RESPONSE,
-        FINISHED
-    };
 
     Client();
     Client(Server &s, int clientFd);
@@ -47,10 +41,12 @@ public:
     void readCgiChunk();
     void sendResponseChunk();
     void setupCgi();
-
-private:
-    ClientState state;
+    void prepareFileResponse();
+    void handleTimeout();
+    void prepareErrorResponse(std::string code);
+    bool is(ClientState s);
     int cgiReadFd;
+    ClientState state;
     pid_t cgiPid;
     time_t startTime;
     std::string requestRaw;

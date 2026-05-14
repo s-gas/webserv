@@ -21,4 +21,11 @@ const int PORT = 8080;
 // Enums
 enum Status { SUCCESS = 0, FAILURE = 1, ERROR = -1 };
 
+enum ClientState {
+  READING_REQUEST,
+  PROCESSING_CGI,
+  SENDING_RESPONSE,
+  FINISHED
+};
+
 #endif

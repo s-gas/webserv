@@ -72,6 +72,9 @@ public:
     int isServerFd(int fd);
     void handleNewConnections(int serverFd, int serverIndex);
     void removeClient(int fd);
+    void registerCgiPipe(int pipeFd, int clientFd);
+    void checkCgiTimeouts();
+    void updateEpollEvent(int fd, uint32_t events);
 
 private:
     int epollFd;

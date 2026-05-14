@@ -1,10 +1,25 @@
 #include "Client.hpp"
 #include "Cgi.hpp"
 #include "Log.hpp"
-#include "Server.hpp"
 #include "defines.hpp"
-#include "readRequest.hpp"
 #include <sys/wait.h>
+
+
+void Client:: setupCgi() {
+  try {
+    Cgi cgiHandler(response, request, server->locations[locationIndex]);
+
+    cgiReadFd = cgiHandler.startAsync();
+    cgiPid = cgiHandler.childPid;
+    state = PROCESSING_CGI;
+    startTime = time(NULL);
+    bytesSent = 0;
+  } catch (const std::exception &e) {
+    LOG_ERROR << "CGI Setup failed: " << e.what();
+    prepareErrorResponse("500");
+    state = SENDING_RESPONSE;
+  }
+}
 
 void Client::handleAction(int triggeredFd) {
   if (state == READING_REQUEST) {
@@ -26,15 +41,22 @@ void Client::readRequestChunk() {
   }
   requestRaw.append(buffer, bytes);
 
-  if (requestRaw.find("\r\n\r\n") != std::string::npos) {
-    request = HttpRequest(requestRaw);
-    processRequest();
+  size_t headerEnd = requestRaw.find("\r\n\r\n");
+  if (headerEnd != std::string::npos) {
+    if (request.method.empty()) {
+      request = HttpRequest(requestRaw);
+    }
+
+    size_t currentBodyLength = requestRaw.size() - (headerEnd + 4);
+    if (currentBodyLength >= request.contentLength) {
+      processRequest();
+    }
   }
 }
 
 void Client::processRequest() {
   if (!isRequestValid()) {
-    prepareErrorResponse();
+    prepareErrorResponse("500");
     state = SENDING_RESPONSE;
   } else if (isCgi()) {
     setupCgi();
@@ -46,7 +68,7 @@ void Client::processRequest() {
 
 void Client::readCgiChunk() {
   char buffer[4096];
-  ssize_t bytes = read(cgiReadFd, buffer, sizeof(buffer);
+  ssize_t bytes = read(cgiReadFd, buffer, sizeof(buffer));
 
   if (bytes > 0) {
     response.body.append(buffer, bytes);
@@ -74,4 +96,37 @@ void Client::sendResponseChunk() {
   } else {
     state = FINISHED;
   }
+}
+
+bool Client::is(ClientState s) {
+  return s == state;
+}
+
+void Client::prepareFileResponse() {
+  generatePath();
+  readFile();
+  writeHeader(".html");
+
+  responseRaw = response.header + response.body;
+  state = SENDING_RESPONSE;
+}
+
+void Client::prepareErrorResponse(std::string code) {
+  if (!code.empty()) response.status = code;
+  writeError();
+  writeHeader(".html");
+  responseRaw = response.header + response.body;
+}
+
+void Client::handleTimeout() {
+  if (cgiPid > 0) {
+    kill(cgiPid, SIGKILL);
+    waitpid(cgiPid, NULL, WNOHANG);
+  }
+  if (cgiReadFd != -1) {
+    close(cgiReadFd);
+    cgiReadFd = -1;
+  }
+  prepareErrorResponse("504");
+  state = SENDING_RESPONSE;
 }

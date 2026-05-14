@@ -1,8 +1,7 @@
-#include "Http.hpp"
+#include "Client.hpp"
 #include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
-#include "readRequest.hpp"
 #include "signal.hpp"
 #include <cerrno>
 #include <fcntl.h>
@@ -11,7 +10,7 @@
 
 #define BUF_SIZE 1024
 
-Config::Config() : Block(MAIN), epollFd(-1){}
+Config::Config() : Block(MAIN), epollFd(-1) {}
 
 Config::~Config() {
   if (epollFd != -1) {
@@ -52,37 +51,70 @@ int Config::init() {
   return SUCCESS;
 }
 
+void Config::updateEpollEvent(int fd, uint32_t events) {
+  struct epoll_event ev;
+  ev.events = events;
+  ev.data.fd = fd;
+  if (epoll_ctl(epollFd, EPOLL_CTL_MOD, fd, &ev) == ERROR) {
+    LOG_ERROR << "Failed to modify epoll event for FD: " << fd;
+  }
+}
+
 // Event-Loop
 void Config::run() {
   int event_count;
 
   while (SignalState::serverRunning) {
-    event_count = epoll_wait(epollFd, events, MAX_EVENTS, -1);
+    // Timeout of 1000ms for periodic cleanup
+    event_count = epoll_wait(epollFd, events, MAX_EVENTS, 1000);
     if (event_count == ERROR) {
-      if (errno == EINTR)
-        return;
+      if (errno == EINTR) return;
       throw std::runtime_error("epoll_wait() failed");
     }
 
-    for (int i = 0; i < event_count; i++) {
+    checkCgiTimeouts();
+
+    for (int i = 0; i < event_count; ++i) {
       int fd = events[i].data.fd;
       int serverIndex = isServerFd(fd);
-      if (serverIndex != -1)
+
+      // A: New connection
+      if (serverIndex != -1) {
         handleNewConnections(fd, serverIndex);
-      else if (clients[fd].handleData()) {
-        removeClient(fd);
+
+        // B: Activity on cgi pipe
+      } else if (cgiToClient.count(fd)) {
+        int clientFd = cgiToClient[fd];
+        ClientState prevState = clients[clientFd].state;
+
+        clients[clientFd].handleAction(fd);
+
+        if (prevState != SENDING_RESPONSE &&  clients[clientFd].is(SENDING_RESPONSE)) {
+          updateEpollEvent(clientFd, EPOLLOUT);
+        }
+
+        if (clients[clientFd].is(FINISHED)) {
+          removeClient(clientFd);
+        }
+
+        // C: Activity on client
+      } else if (clients.count(fd)) {
+        ClientState prevState = clients[fd].state;
+        clients[fd].handleAction(fd);
+
+        if (prevState != PROCESSING_CGI && clients[fd].is(PROCESSING_CGI) && clients[fd].cgiReadFd != -1) {
+          registerCgiPipe(clients[fd].cgiReadFd, fd);
+        }
+
+        if (prevState != SENDING_RESPONSE && clients[fd].is(SENDING_RESPONSE)) {
+          updateEpollEvent(fd, EPOLLOUT);
+        }
+
+        if (clients[fd].is(FINISHED))
+          removeClient(fd);
       }
     }
   }
-}
-
-void Config::removeClient(int fd) {
-    if (epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL)) {
-        LOG_ERROR << "Failed to remove FD " << fd;
-    }
-    close(clients[fd].fd);
-    clients.erase(fd);
-    LOG_INFO << "Disconnecting client FD: " << fd;
 }
 
 int Config::isServerFd(int fd) {
@@ -120,4 +152,44 @@ void Config::handleNewConnections(int serverFd, int serverIndex) {
       close(clientFd);
     }
   }
+}
+
+void Config::registerCgiPipe(int pipeFd, int clientFd) {
+  cgiToClient[pipeFd] = clientFd;
+
+  struct epoll_event ev;
+  ev.events = EPOLLIN;
+  ev.data.fd = pipeFd;
+
+  if (epoll_ctl(epollFd, EPOLL_CTL_ADD, pipeFd, &ev) == ERROR) {
+    LOG_ERROR << "Failed to add CGI pipe to epoll";
+  }
+}
+
+void Config::checkCgiTimeouts() {
+  time_t now = time(NULL);
+  for (std::map<int, Client>::iterator it = clients.begin();
+       it != clients.end(); ++it) {
+    Client &c = it->second;
+    if (c.is(PROCESSING_CGI) && (now - c.startTime > 30)) {
+      LOG_ERROR << "CGI Timeout on client FD " << c.fd;
+      if (c.cgiReadFd != -1) {
+        epoll_ctl(epollFd, EPOLL_CTL_DEL, c.cgiReadFd, NULL);
+        cgiToClient.erase(c.cgiReadFd);
+      }
+      c.handleTimeout();
+    }
+  }
+}
+
+void Config::removeClient(int fd) {
+  int cgiFd = clients[fd].cgiReadFd;
+  if (cgiFd != -1) {
+    epoll_ctl(epollFd, EPOLL_CTL_DEL, cgiFd, NULL);
+    cgiToClient.erase(cgiFd);
+  }
+  epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+  close(fd);
+  clients.erase(fd);
+  LOG_INFO << "Client FD " << fd << " removed.";
 }

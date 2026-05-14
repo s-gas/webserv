@@ -1,16 +1,14 @@
 #include "Client.hpp"
-#include "Cgi.hpp"
-#include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
 #include "readRequest.hpp"
 
 Client::Client()
-  : server(NULL), state(READING_REQUEST), cgiReadFd(-1), cgiPid(-1) {}
+  : server(NULL), cgiReadFd(-1), state(READING_REQUEST), cgiPid(-1) {}
 
 Client::Client(Server &s, int clientFd)
-  : server(&s), locationIndex(-1), fd(clientFd), state(READING_REQUEST),
-    cgiReadFd(-1), cgiPid(-1) {}
+  : server(&s), locationIndex(-1), fd(clientFd), cgiReadFd(-1),
+    state(READING_REQUEST), cgiPid(-1) {}
 
 bool Client::handleData() {
   std::string requestString = readRequest(fd);

@@ -1,19 +1,16 @@
 #include "Cgi.hpp"
-#include "Client.hpp"
 #include "Log.hpp"
 #include <cstdlib>
 #include <cstring>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 // public ----------------------------------------------------------------------
 
-/* next to-dos:
- * - build execute within the epoll, implement timeout
- */
-
-Cgi::Cgi(HttpResponse &response, HttpRequest &request, Location &location) : status(response.status) {
+Cgi::Cgi(HttpResponse &response, HttpRequest &request, Location &location)
+    : status(response.status) {
   envArr = NULL;
   argArr = NULL;
   root = location.root;
@@ -30,6 +27,43 @@ Cgi::~Cgi() {
     freeArr(envArr);
   if (argArr)
     freeArr(argArr);
+}
+
+int Cgi::startAsync() {
+  checkScriptFileName();
+  envArr = mapToArr(envMap);
+
+  // Piping
+  int pipeCToP[2];
+  if (pipe(pipeCToP) == -1) {
+    status = "500";
+    throw std::runtime_error("CGI: Pipe failed");
+  }
+  fcntl(pipeCToP[0], F_SETFL, O_NONBLOCK);
+
+  // Forking
+  childPid = fork();
+  if (childPid == -1) {
+    close(pipeCToP[0]);
+    close(pipeCToP[1]);
+    throw std::runtime_error("CGI: Fork failed");
+  }
+
+  // Child
+  if (childPid == 0) {
+    if (dup2(pipeCToP[1], STDOUT_FILENO) == -1) {
+      close(pipeCToP[0]);
+      close(pipeCToP[1]);
+      exit(1);
+    }
+    if (execve(argArr[0], argArr, envArr) == -1) {
+      exit(1);
+    }
+  }
+
+  // Parent
+  close(pipeCToP[1]);
+  return pipeCToP[0];
 }
 
 std::string Cgi::execute() {
@@ -108,7 +142,6 @@ void Cgi::setScriptFileName(HttpRequest &request, Location &location) {
   scriptFileName +=
       location.endpoint == "/" ? request.endpoint : location.endpoint;
   scriptFileName += request.file.empty() ? location.index : request.file;
-
 }
 
 // populating the env-Map

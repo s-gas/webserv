@@ -9,10 +9,12 @@
 class Cgi {
 
 public:
+  pid_t childPid;
   Cgi(HttpResponse &response, HttpRequest &request, Location &location);
   ~Cgi();
 
   std::string execute();
+  int startAsync();
 
 private:
   std::string root;
