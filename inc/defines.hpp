@@ -13,7 +13,7 @@
 #define LOG_DEBUG Log(Log::DEBUG)
 #define LOG_INFO if (!LOG_INFO_ON) {} else Log(Log::INFO)
 
-#define MAX_EVENTS 32
+#define MAX_EVENTS 1024
 
 // Constants
 const int PORT = 8080;

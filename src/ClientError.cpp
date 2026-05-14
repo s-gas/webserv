@@ -1,6 +1,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include <fstream>
+#include <sys/wait.h>
 
 void Client::writeError() {
     std::string path;
@@ -18,4 +19,14 @@ void Client::prepareErrorResponse(std::string code) {
   writeError();
   writeHeader(".html");
   responseRaw = response.header + response.body;
+}
+
+void Client::handleTimeout() {
+  if (cgiPid > 0) {
+    kill(cgiPid, SIGKILL);
+    waitpid(cgiPid, NULL, WNOHANG);
+  }
+
+  prepareErrorResponse("504");
+  state = SENDING_RESPONSE;
 }

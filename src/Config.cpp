@@ -127,6 +127,10 @@ void Config::run() {
         clients[clientFd].handleAction(fd);
 
         if (prevState != SENDING_RESPONSE &&  clients[clientFd].is(SENDING_RESPONSE)) {
+          epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+          close(fd);
+          cgiToClient.erase(fd);
+          clients[clientFd].cgiReadFd = -1;
           updateEpollEvent(clientFd, EPOLLOUT);
         }
 
@@ -212,28 +216,37 @@ void Config::checkCgiTimeouts() {
       LOG_ERROR << "CGI Timeout on client FD " << c.fd;
       if (c.cgiReadFd != -1) {
         epoll_ctl(epollFd, EPOLL_CTL_DEL, c.cgiReadFd, NULL);
+        close(c.cgiReadFd);
         cgiToClient.erase(c.cgiReadFd);
+        c.cgiReadFd = -1;
       }
       c.handleTimeout();
+      updateEpollEvent(c.fd, EPOLLOUT);
     }
   }
 }
 
 void Config::removeClient(int fd) {
-  if (clients[fd].cgiPid > 0) {
-    kill(clients[fd].cgiPid, SIGKILL);
-    waitpid(clients[fd].cgiPid, NULL, WNOHANG);
-  }
+  if (clients.count(fd)) {
+    int cgiFd = clients[fd].cgiReadFd;
+    if (cgiFd != -1) {
+      epoll_ctl(epollFd, EPOLL_CTL_DEL, cgiFd, NULL);
+      close(cgiFd);
+      cgiToClient.erase(cgiFd);
+      clients[fd].cgiReadFd = -1;
+    }
 
-  int cgiFd = clients[fd].cgiReadFd;
-  if (cgiFd != -1) {
-    epoll_ctl(epollFd, EPOLL_CTL_DEL, cgiFd, NULL);
-    close(cgiFd);
-    cgiToClient.erase(cgiFd);
-  }
+    if (clients[fd].cgiPid > 0) {
+      kill(clients[fd].cgiPid, SIGKILL);
+      waitpid(clients[fd].cgiPid, NULL, WNOHANG);
+    }
 
-  epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
-  close(fd);
-  clients.erase(fd);
-  LOG_INFO << "Client FD " << fd << " removed.";
+    epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+    close(fd);
+    clients.erase(fd);
+    LOG_INFO << "Client FD " << fd << " removed.";
+  } else {
+    epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+    close(fd);
+  }
 }

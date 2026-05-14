@@ -79,10 +79,7 @@ void Client::readCgiChunk() {
     response.body.append(buffer, bytes);
     startTime = time(NULL);
   } else {
-    close(cgiReadFd);
-    cgiReadFd = -1;
     waitpid(cgiPid, NULL, WNOHANG);
-
     writeCgiHeader();
     responseRaw = response.header + response.body;
     state = SENDING_RESPONSE;
@@ -105,17 +102,4 @@ void Client::sendResponseChunk() {
 
 bool Client::is(ClientState s) {
   return s == state;
-}
-
-void Client::handleTimeout() {
-  if (cgiPid > 0) {
-    kill(cgiPid, SIGKILL);
-    waitpid(cgiPid, NULL, WNOHANG);
-  }
-  if (cgiReadFd != -1) {
-    close(cgiReadFd);
-    cgiReadFd = -1;
-  }
-  prepareErrorResponse("504");
-  state = SENDING_RESPONSE;
 }
