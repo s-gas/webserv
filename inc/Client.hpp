@@ -14,6 +14,13 @@ public:
     int locationIndex;
     int fd;
 
+    enum ClientState {
+        READING_REQUEST,
+        PROCESSING_CGI,
+        SENDING_RESPONSE,
+        FINISHED
+    };
+
     Client();
     Client(Server &s, int clientFd);
     bool handleData();
@@ -32,6 +39,23 @@ public:
     void writeError();
     bool isCgi();
     bool isSizeOkay();
+
+    // State Machine
+    void handleAction(int triggeredFd);
+    void readRequestChunk();
+    void processRequest();
+    void readCgiChunk();
+    void sendResponseChunk();
+    void setupCgi();
+
+private:
+    ClientState state;
+    int cgiReadFd;
+    pid_t cgiPid;
+    time_t startTime;
+    std::string requestRaw;
+    std::string responseRaw;
+    size_t bytesSent;
 };
 
 #endif
