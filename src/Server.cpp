@@ -13,7 +13,7 @@ Server::Server() : Block(SERVER){}
 Server::~Server() {
   for (size_t i = 0; i < serverFd.size(); ++i) {
     if (serverFd[i] != -1) {
-      LOG_INFO << "Closing server socket " << i;
+      LOG_INFO << "Closing server fd " << serverFd[i];
       close(serverFd[i]);
       serverFd[i];
     }

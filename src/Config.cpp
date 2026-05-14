@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <fcntl.h>
 #include <sys/epoll.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define BUF_SIZE 1024
@@ -13,6 +14,17 @@
 Config::Config() : Block(MAIN), epollFd(-1) {}
 
 Config::~Config() {
+  for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it) {
+    if (it->second.cgiReadFd != -1) {
+      close(it->second.cgiReadFd);
+    }
+    close(it->first);
+    LOG_INFO << "Force closed remaining client FD: " << it->first;
+  }
+
+  clients.clear();
+  cgiToClient.clear();
+
   if (epollFd != -1) {
     LOG_INFO << "Closing epollFd";
     close(epollFd);
@@ -76,6 +88,31 @@ void Config::run() {
 
     for (int i = 0; i < event_count; ++i) {
       int fd = events[i].data.fd;
+      uint32_t event_types = events[i].events;
+
+      // Handling socket errors immediately
+      if (event_types & EPOLLERR) {
+        LOG_ERROR << "Epoll error on FD: " << fd;
+        if (cgiToClient.count(fd)) {
+          int clientFd = cgiToClient[fd];
+          clients[clientFd].prepareErrorResponse("500");
+          clients[clientFd].state = SENDING_RESPONSE;
+          updateEpollEvent(clientFd, EPOLLOUT);
+
+          epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+          close(fd);
+          cgiToClient.erase(fd);
+          clients[clientFd].cgiReadFd = -1;
+        } else if (clients.count(fd)) {
+          removeClient(fd);
+        }
+        continue;
+      } else if ((event_types & EPOLLHUP) && !cgiToClient.count(fd)) {
+        LOG_INFO << "Client hangup on FD: " << fd;
+        removeClient(fd);
+        continue;
+      }
+
       int serverIndex = isServerFd(fd);
 
       // A: New connection
@@ -183,11 +220,18 @@ void Config::checkCgiTimeouts() {
 }
 
 void Config::removeClient(int fd) {
+  if (clients[fd].cgiPid > 0) {
+    kill(clients[fd].cgiPid, SIGKILL);
+    waitpid(clients[fd].cgiPid, NULL, WNOHANG);
+  }
+
   int cgiFd = clients[fd].cgiReadFd;
   if (cgiFd != -1) {
     epoll_ctl(epollFd, EPOLL_CTL_DEL, cgiFd, NULL);
+    close(cgiFd);
     cgiToClient.erase(cgiFd);
   }
+
   epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
   close(fd);
   clients.erase(fd);

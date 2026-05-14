@@ -13,7 +13,6 @@ public:
   Cgi(HttpResponse &response, HttpRequest &request, Location &location);
   ~Cgi();
 
-  std::string execute();
   int startAsync();
 
 private:

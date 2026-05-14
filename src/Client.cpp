@@ -4,28 +4,12 @@
 #include "readRequest.hpp"
 
 Client::Client()
-  : server(NULL), cgiReadFd(-1), state(READING_REQUEST), cgiPid(-1) {}
+  : server(NULL), locationIndex(-1), fd(-1), cgiReadFd(-1),
+    state(READING_REQUEST), cgiPid(-1), startTime(0), bytesSent(0) {}
 
 Client::Client(Server &s, int clientFd)
   : server(&s), locationIndex(-1), fd(clientFd), cgiReadFd(-1),
-    state(READING_REQUEST), cgiPid(-1) {}
-
-bool Client::handleData() {
-  std::string requestString = readRequest(fd);
-  request = HttpRequest(requestString);
-  request.print();
-  if (!isRequestValid()) {
-      serveFile();
-  } else if (isCgi()) {
-      serveCGI();
-  } else {
-    generatePath();
-      if (request.method == "GET") serveFile();
-      else if (request.method == "POST") uploadFile();
-      else if (request.method == "DELETE") deleteFile();
-  }
-  return true;
-}
+    state(READING_REQUEST), cgiPid(-1), startTime(0), bytesSent(0) {}
 
 bool Client::isRequestValid() {
     if (request.version != response.version) {
@@ -81,6 +65,7 @@ void Client::writeHeader(std::string extension) {
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
     ss << "Server: " << response.server;
+    ss << "Connection: close\r\n";
     ss << "Content-Type: " << server->contentTypes[extension] << "\r\n";
     ss << "Content-Length: " << response.body.size() << "\r\n";
     ss << response.emptyLine;
@@ -91,6 +76,7 @@ void Client::writeCgiHeader() {
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
     ss << "Server: " << response.server;
+    ss << "Connection: close";
     response.header = ss.str();
 }
 

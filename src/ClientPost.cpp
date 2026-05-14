@@ -4,17 +4,12 @@
 #include "defines.hpp"
 #include "readRequest.hpp"
 
-void Client::uploadFile() {
-    writeFile();
-    writeHeader(".html");
-    response.response = response.header + response.body;
-    response.print();
-    write(fd, response.response.c_str(), response.response.size());
-}
-
 void Client::writeFile() {
+    LOG_INFO << "Attempting to POST/Upload to path: " << path;
+
     std::ofstream file(path.c_str());
     if (!file.is_open()) {
+        LOG_ERROR << "Failed to open file for writing: " << path;
         response.status = "500";
         response.error = true;
         writeError();

@@ -17,11 +17,6 @@ public:
 
     Client();
     Client(Server &s, int clientFd);
-    bool handleData();
-    void serveFile();
-    void serveCGI();
-    void uploadFile();
-    void deleteFile();
     bool isRequestValid();
     bool isMethodAllowed();
     int isEndpoint();
@@ -42,6 +37,8 @@ public:
     void sendResponseChunk();
     void setupCgi();
     void prepareFileResponse();
+    void prepareUploadResponse();
+    void prepareDeleteResponse();
     void handleTimeout();
     void prepareErrorResponse(std::string code);
     bool is(ClientState s);

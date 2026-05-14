@@ -66,56 +66,6 @@ int Cgi::startAsync() {
   return pipeCToP[0];
 }
 
-std::string Cgi::execute() {
-  checkScriptFileName();
-  envArr = mapToArr(envMap);
-  // Piping
-  int pipePToC[] = {-1, -1}; // Parent -> Child
-  int pipeCToP[] = {-1, -1}; // Child -> Parent
-  if (pipe(pipePToC) == -1 || pipe(pipeCToP) == -1) {
-    closePipes(pipePToC, pipeCToP);
-    status = "500";
-    throw std::runtime_error("CGI: Piping failed");
-  }
-
-  // Forking
-  pid_t pid = fork();
-  if (pid == -1) {
-    closePipes(pipePToC, pipeCToP);
-    status = "500";
-    throw std::runtime_error("CGI: Forking failed");
-  }
-
-  // Child
-  if (pid == 0) {
-    if (dup2(pipePToC[0], STDIN_FILENO) == -1 ||
-        dup2(pipeCToP[1], STDOUT_FILENO) == -1) {
-      exit(1);
-    }
-    closePipes(pipePToC, pipeCToP);
-    if (execve(argArr[0], argArr, envArr) == -1)
-      exit(1);
-  }
-
-  // Parent
-  close(pipePToC[0]);
-  close(pipeCToP[1]);
-  if (!envMap["REQUEST_METHOD"].empty() && envMap["REQUEST_METHOD"] == "POST") {
-    //    write(pipePToC[1], request.body.c_str(), request.body.size());
-  }
-  close(pipePToC[1]);
-
-  char buffer[4096];
-  std::string response;
-  ssize_t bytesRead;
-  while ((bytesRead = read(pipeCToP[0], buffer, sizeof(buffer))) > 0) {
-    response.append(buffer, bytesRead);
-  }
-  close(pipeCToP[0]);
-  waitpid(pid, NULL, 0);
-  return response;
-}
-
 // private ---------------------------------------------------------------------
 
 void Cgi::checkScriptFileName() {

@@ -4,7 +4,6 @@
 #include "defines.hpp"
 #include <sys/wait.h>
 
-
 void Client:: setupCgi() {
   try {
     Cgi cgiHandler(response, request, server->locations[locationIndex]);
@@ -16,7 +15,7 @@ void Client:: setupCgi() {
     bytesSent = 0;
   } catch (const std::exception &e) {
     LOG_ERROR << "CGI Setup failed: " << e.what();
-    prepareErrorResponse("500");
+    prepareErrorResponse(response.status);
     state = SENDING_RESPONSE;
   }
 }
@@ -56,13 +55,19 @@ void Client::readRequestChunk() {
 
 void Client::processRequest() {
   if (!isRequestValid()) {
-    prepareErrorResponse("500");
+    prepareErrorResponse(response.status);
     state = SENDING_RESPONSE;
   } else if (isCgi()) {
     setupCgi();
   } else {
-    prepareFileResponse();
-    state = SENDING_RESPONSE;
+    generatePath();
+    if (request.method == "GET") {
+      prepareFileResponse();
+    } else if (request.method == "POST") {
+      prepareUploadResponse();
+    } else if (request.method == "DELETE") {
+      prepareDeleteResponse();
+    }
   }
 }
 
@@ -107,6 +112,27 @@ void Client::prepareFileResponse() {
   readFile();
   writeHeader(".html");
 
+  responseRaw = response.header + response.body;
+  state = SENDING_RESPONSE;
+}
+
+void Client::prepareUploadResponse() {
+  writeFile();
+  writeHeader(".html");
+  responseRaw = response.header + response.body;
+  state = SENDING_RESPONSE;
+}
+
+void Client::prepareDeleteResponse() {
+  if (std::remove(path.c_str()) != 0) {
+    response.status = "404";
+    response.error = true;
+    writeError();
+  } else {
+    response.status = "200";
+    response.body = "<html><body><h1>File deleted successfully</h1></body></html>\n";
+  }
+  writeHeader(".html");
   responseRaw = response.header + response.body;
   state = SENDING_RESPONSE;
 }

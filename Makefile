@@ -22,9 +22,7 @@ SRC_FILES	= $(addsuffix .cpp, main \
 								Server \
 								Cgi \
 								Client \
-								ClientCGI \
 								ClientStateHandling \
-								ClientDelete \
 								ClientError \
 								ClientGet \
 								ClientPost \
