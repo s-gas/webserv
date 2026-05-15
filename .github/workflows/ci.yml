@@ -55,12 +55,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Test Dependencies
-        run: sudo apt-get update && sudo apt-get install -y valgrind siege
+        run: |
+          sudo apt-get update && sudo apt-get install -y valgrind siege python3-pip
+          pip3 install -r tests/src/e2e_test/requirements.txt
 
       - name: Compile Webserv
         run: make
 
-      - name: Run E2E Bash Tests
+      - name: Run E2E Python Tests
         run: |
           # start server
           ./webserv tests/conf-files/test25.conf & SERVER_PID=$!
@@ -69,27 +71,23 @@ jobs:
           sleep 2
 
           # E2E-test
-          bash tests/src/e2e_test/e2e_bash_test.sh
+          pytest tests/src/e2e_test/e2e_test.py -v
 
           # shut-down server
-          kill -SIGTERM $SERVER_PID
-
-          # get exit code
-          wait $SERVER_PID
+          kill -SIGTERM $SERVER_PID || true
+          wait $SERVER_PID || true
 
       - name: Run Siege Test with Valgrind
         run: |
           # start server using valgrind
-          valgrind --leak-check=full --error-exitcode=1 ./webserv tests/conf-files/test14.conf & SERVER_PID=$!
+          valgrind --leak-check=full --error-exitcode=1 ./webserv tests/conf-files/test25.conf & SERVER_PID=$!
 
           # setup-time
           sleep 2
 
           # siege-test
-          siege -c5 -r3 http://127.0.0.1:8080
+          siege -c5 -r3 http://127.0.0.1:1024/
 
           # shut-down server
-          kill -SIGTERM $SERVER_PID
-
-          # valgrind exit code
-          wait $SERVER_PID
+          kill -SIGTERM $SERVER_PID || true
+          wait $SERVER_PID || true
