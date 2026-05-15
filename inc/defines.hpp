@@ -22,10 +22,10 @@ const int PORT = 8080;
 enum Status { SUCCESS = 0, FAILURE = 1, ERROR = -1 };
 
 enum ClientState {
-  R_REQ, // READING_REQUEST
-  W_CGI, // WRITING_CGI
-  P_CGI, // PROCESSING_CGI
-  S_RES, // SENDING_RESPONSE
+  READING, // reading client request
+  WRITING, // writing to CGI pipe
+  PROCESSING, // waiting for CGI output
+  SENDING, // sending response to client
   DONE
 };
 

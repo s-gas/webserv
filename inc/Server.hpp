@@ -61,8 +61,8 @@ class Config: public Block {
 public:
     std::vector<Server> servers;
     std::map<int, Client> clients;
-    std::map<int, int> cgiToClient;
-    std::map<int, int> cgiWriteToClient;
+    std::map<int, int> readPipes;
+    std::map<int, int> writePipes;
 
     Config();
     ~Config();
@@ -84,6 +84,11 @@ private:
     int epollFd;
     struct epoll_event event;
     struct epoll_event events[MAX_EVENTS];
+
+    void handleEpollError(int fd);
+    void handleCgiRead(int fd);
+    void handleCgiWrite(int fd);
+    void handleClient(int fd);
 };
 
 #endif

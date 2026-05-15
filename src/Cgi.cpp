@@ -55,7 +55,7 @@ void Cgi::execScript(int &readFd, int &writeFd) {
   if (childPid == 0) {
     close(pipePToC[1]);
     close(pipeCToP[0]);
-    if (dup2(pipePToC[0], STDOUT_FILENO) == -1 ||
+    if (dup2(pipePToC[0], STDIN_FILENO) == -1 ||
         dup2(pipeCToP[1], STDOUT_FILENO) == -1) {
       exit(1);
     }

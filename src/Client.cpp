@@ -19,7 +19,7 @@ void Client::init() {
   cgiWriteFd = -1;
   cgiBytesWritten = 0;
   cgiReadFd = -1;
-  state = R_REQ;
+  state = READING;
   cgiPid = -1;
   startTime = 0;
   lastActTime = time(NULL);

@@ -23,5 +23,5 @@ void Client::prepareErrorResponse(std::string code) {
 
 void Client::handleTimeout() {
   prepareErrorResponse("504");
-  state = S_RES;
+  state = SENDING;
 }

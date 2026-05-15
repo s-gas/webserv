@@ -23,7 +23,7 @@ Config::~Config() {
   }
 
   clients.clear();
-  cgiToClient.clear();
+  readPipes.clear();
 
   if (epollFd != -1) {
     LOG_INFO << "Closing epollFd";
@@ -72,110 +72,6 @@ void Config::updateEpollEvent(int fd, uint32_t events) {
   }
 }
 
-// Event-Loop
-void Config::run() {
-  int event_count;
-
-  while (SignalState::serverRunning) {
-    // Timeout of 1000ms for periodic cleanup
-    event_count = epoll_wait(epollFd, events, MAX_EVENTS, 1000);
-    if (event_count == ERROR) {
-      if (errno == EINTR) return;
-      throw std::runtime_error("epoll_wait() failed");
-    }
-
-    checkTimeouts();
-
-    for (int i = 0; i < event_count; ++i) {
-      int fd = events[i].data.fd;
-      uint32_t event_types = events[i].events;
-
-      // Handling socket errors immediately
-      if (event_types & EPOLLERR) {
-        LOG_ERROR << "Epoll error on FD: " << fd;
-        if (cgiToClient.count(fd)) {
-          int clientFd = cgiToClient[fd];
-          clients[clientFd].prepareErrorResponse("500");
-          clients[clientFd].state = S_RES;
-          updateEpollEvent(clientFd, EPOLLOUT);
-
-          epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
-          close(fd);
-          cgiToClient.erase(fd);
-          clients[clientFd].cgiReadFd = -1;
-        } else if (cgiWriteToClient.count(fd)) {
-          int clientFd = cgiWriteToClient[fd];
-          epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
-          close(fd);
-          cgiWriteToClient.erase(fd);
-          clients[clientFd].cgiWriteFd = -1;
-          clients[clientFd].state = P_CGI;
-        } else if (clients.count(fd)) {
-          removeClient(fd);
-        }
-        continue;
-      }
-
-      int serverIndex = isServerFd(fd);
-
-      // A: New connection
-      if (serverIndex != -1) {
-        handleNewConnections(fd, serverIndex);
-
-        // B: Activity on cgi pipe
-      } else if (cgiToClient.count(fd)) {
-        int clientFd = cgiToClient[fd];
-        ClientState prevState = clients[clientFd].state;
-
-        clients[clientFd].handleAction(fd);
-
-        if (prevState != S_RES &&  clients[clientFd].is(S_RES)) {
-          epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
-          close(fd);
-          cgiToClient.erase(fd);
-          clients[clientFd].cgiReadFd = -1;
-          updateEpollEvent(clientFd, EPOLLOUT);
-        }
-
-        if (clients[clientFd].is(DONE)) {
-          removeClient(clientFd);
-        }
-
-        // C: Activity on CGI Write Pipe
-      } else if (cgiWriteToClient.count(fd)) {
-        int clientFd = cgiWriteToClient[fd];
-        clients[clientFd].handleAction(fd);
-
-        if (clients[clientFd].is(P_CGI) || clients[clientFd].is(S_RES)) {
-          epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
-          close(fd);
-          cgiWriteToClient.erase(fd);
-          clients[clientFd].cgiWriteFd = -1;
-        }
-
-        if (clients[clientFd].is(DONE)) {
-          removeClient(clientFd);
-        }
-        // D: Activity on client
-      } else if (clients.count(fd)) {
-        ClientState prevState = clients[fd].state;
-        clients[fd].handleAction(fd);
-
-        if (prevState != W_CGI && prevState != P_CGI && (clients[fd].is(W_CGI) || clients[fd].is(P_CGI))) {
-          registerCgiPipe(clients[fd]);
-        }
-
-        if (prevState != S_RES && clients[fd].is(S_RES)) {
-          updateEpollEvent(fd, EPOLLOUT);
-        }
-
-        if (clients[fd].is(DONE))
-          removeClient(fd);
-      }
-    }
-  }
-}
-
 int Config::isServerFd(int fd) {
   for (size_t i = 0; i < servers.size(); ++i) {
     for (size_t j = 0; j < servers[i].serverFd.size(); ++j) {
@@ -190,8 +86,7 @@ int Config::isServerFd(int fd) {
 void Config::handleNewConnections(int serverFd, int serverIndex) {
   struct sockaddr_in clientAddr;
   struct epoll_event clientEvent;
-  socklen_t clientAddrLen = sizeof(clientAddr);
-  int clientFd;
+  socklen_t clientAddrLen = sizeof(clientAddr); int clientFd;
 
   while (true) {
     clientFd = accept(serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
@@ -216,7 +111,7 @@ void Config::handleNewConnections(int serverFd, int serverIndex) {
 
 void Config::registerCgiPipe(Client &c) {
   if (c.cgiReadFd != -1) {
-    cgiToClient[c.cgiReadFd] = c.fd;
+    readPipes[c.cgiReadFd] = c.fd;
     struct epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.fd = c.cgiReadFd;
@@ -224,7 +119,7 @@ void Config::registerCgiPipe(Client &c) {
   }
 
   if (c.cgiWriteFd != -1) {
-    cgiWriteToClient[c.cgiWriteFd] = c.fd;
+    writePipes[c.cgiWriteFd] = c.fd;
     struct epoll_event ev;
     ev.events = EPOLLOUT;
     ev.data.fd = c.cgiWriteFd;
@@ -241,7 +136,7 @@ void Config::checkTimeouts() {
     int currentFd = it->first;
 
     // check CGI Timeout (30 sec)
-    if ((c.is(P_CGI) || c.is(W_CGI)) && (now - c.startTime > 30)) {
+    if ((c.is(PROCESSING) || c.is(WRITING)) && (now - c.startTime > 30)) {
       LOG_ERROR << "CGI Timeout on client FD " << c.fd;
       cleanUpClientCgi(c);
       c.handleTimeout();
@@ -284,8 +179,8 @@ void Config::removeCgiPipe(int &pipeFd, std::map<int, int> &pipeMap) {
 }
 
 void Config::cleanUpClientCgi(Client &c) {
-  removeCgiPipe(c.cgiWriteFd, cgiWriteToClient);
-  removeCgiPipe(c.cgiReadFd, cgiToClient);
+  removeCgiPipe(c.cgiWriteFd, writePipes);
+  removeCgiPipe(c.cgiReadFd, readPipes);
 }
 
 void Config::killCgiProcess(Client &c) {

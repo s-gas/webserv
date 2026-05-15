@@ -11,9 +11,9 @@ void Client::setupCgi() {
     cgiHandler.execScript(cgiReadFd, cgiWriteFd);
     cgiPid = cgiHandler.childPid;
     if (cgiWriteFd != -1 && !request.body.empty()) {
-      state = W_CGI;
+      state = WRITING;
     } else {
-      state = P_CGI;
+      state = PROCESSING;
     }
     startTime = time(NULL);
     bytesSent = 0;
@@ -21,18 +21,18 @@ void Client::setupCgi() {
   } catch (const std::exception &e) {
     LOG_ERROR << "CGI Setup failed: " << e.what();
     prepareErrorResponse(response.status);
-    state = S_RES;
+    state = SENDING;
   }
 }
 
 void Client::handleAction(int triggeredFd) {
-  if (state == R_REQ) {
+  if (state == READING) {
     readRequestChunk();
-  } else if (state == W_CGI && triggeredFd == cgiWriteFd) {
+  } else if (state == WRITING && triggeredFd == cgiWriteFd) {
     writeCgiChunk();
-  } else if (state == P_CGI && triggeredFd == cgiReadFd) {
+  } else if (state == PROCESSING && triggeredFd == cgiReadFd) {
     readCgiChunk();
-  } else if (state == S_RES) {
+  } else if (state == SENDING) {
     sendResponseChunk();
   }
 }
@@ -65,7 +65,7 @@ void Client::readRequestChunk() {
 void Client::processRequest() {
   if (!isRequestValid()) {
     prepareErrorResponse(response.status);
-    state = S_RES;
+    state = SENDING;
   } else if (isCgi()) {
     setupCgi();
   } else {
@@ -83,7 +83,7 @@ void Client::processRequest() {
 void Client::writeCgiChunk() {
   ssize_t remaining = request.body.size() - cgiBytesWritten;
   if (remaining <= 0) {
-    state = P_CGI;
+    state = PROCESSING;
     return;
   }
 
@@ -93,12 +93,12 @@ void Client::writeCgiChunk() {
   if (sent > 0) {
     cgiBytesWritten += sent;
     if (cgiBytesWritten >= request.body.size()) {
-      state = P_CGI;
+      state = PROCESSING;
     }
     lastActTime = time(NULL);
   } else {
     prepareErrorResponse("500");
-    state = S_RES;
+    state = SENDING;
   }
 }
 
@@ -114,11 +114,11 @@ void Client::readCgiChunk() {
     // finished read
     writeCgiHeader();
     responseRaw = response.header + response.body;
-    state = S_RES;
+    state = SENDING;
   } else {
     // pipe error
     prepareErrorResponse("500");
-    state = S_RES;
+    state = SENDING;
   }
 }
 

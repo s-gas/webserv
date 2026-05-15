@@ -23,5 +23,5 @@ void Client::prepareUploadResponse() {
   writeFile();
   writeHeader(".html");
   responseRaw = response.header + response.body;
-  state = S_RES;
+  state = SENDING;
 }

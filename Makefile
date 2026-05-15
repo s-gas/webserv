@@ -18,25 +18,26 @@ INC_DIR		= inc
 # Source files
 SRC_FILES	= $(addsuffix .cpp, main \
 								Block \
-								Config \
-								Server \
 								Cgi \
 								Client \
-								ClientStateHandling \
 								ClientDelete \
 								ClientError \
 								ClientGet \
 								ClientPost \
+								ClientStateHandling \
+								Config \
+								ConfigEventLoop \
+								HttpRequest \
+								HttpResponse \
 								Location \
 								Log \
+								Server \
 								checkExtension \
 								parseConfig \
 								parseConfigUtils \
 								readFile \
-								signal \
 								readRequest \
-								HttpRequest \
-								HttpResponse)
+								signal)
 SRCS		= $(addprefix $(SRC_DIR)/, $(SRC_FILES))
 
 # Object and Dependency files
