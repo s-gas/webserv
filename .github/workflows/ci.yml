@@ -71,7 +71,7 @@ jobs:
           sleep 2
 
           # E2E-test
-          pytest tests/src/e2e_test/e2e_test.py -v
+          pytest tests/src/e2e_test/e2e_test.py -v --tb=short
 
           # shut-down server
           kill -SIGTERM $SERVER_PID || true

@@ -2,6 +2,7 @@ import requests
 import subprocess
 import pytest
 import os
+import re
 
 # --- Configuration based on test25.conf ---
 HOST = "127.0.0.1"
