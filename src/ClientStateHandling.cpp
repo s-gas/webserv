@@ -112,13 +112,11 @@ void Client::readCgiChunk() {
     startTime = time(NULL);
   } else if (bytes == 0) {
     // finished read
-    waitpid(cgiPid, NULL, WNOHANG);
     writeCgiHeader();
     responseRaw = response.header + response.body;
     state = S_RES;
   } else {
     // pipe error
-    waitpid(cgiPid, NULL, WNOHANG);
     prepareErrorResponse("500");
     state = S_RES;
   }

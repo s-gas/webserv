@@ -291,7 +291,6 @@ void Config::cleanUpClientCgi(Client &c) {
 void Config::killCgiProcess(Client &c) {
   if (c.cgiPid > 0) {
     kill(c.cgiPid, SIGKILL);
-    waitpid(c.cgiPid, NULL, WNOHANG);
     c.cgiPid = -1;
   }
 }

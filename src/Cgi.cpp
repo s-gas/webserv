@@ -54,13 +54,13 @@ void Cgi::execScript(int &readFd, int &writeFd) {
   // Child
   if (childPid == 0) {
     close(pipePToC[1]);
-    close(pipePToC[0]);
+    close(pipeCToP[0]);
     if (dup2(pipePToC[0], STDOUT_FILENO) == -1 ||
         dup2(pipeCToP[1], STDOUT_FILENO) == -1) {
       exit(1);
     }
-    close(pipeCToP[0]);
-    close(pipePToC[1]);
+    close(pipePToC[0]);
+    close(pipeCToP[1]);
     if (execve(argArr[0], argArr, envArr) == -1) {
       exit(1);
     }

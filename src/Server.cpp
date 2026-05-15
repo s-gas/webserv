@@ -56,7 +56,7 @@ void Server::init() {
     if (bind(serverFd[i], (struct sockaddr *)&addr[i], sizeof(addr[i])) == ERROR)
       throw std::runtime_error("Bind failed");
 
-    if (listen(serverFd[i], 10) == ERROR)
+    if (listen(serverFd[i], SOMAXCONN) == ERROR)
       throw std::runtime_error("Listen failed");
 
     LOG_INFO << "Server is listening on port " << port[i];
