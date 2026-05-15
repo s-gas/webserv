@@ -1,4 +1,5 @@
 ```mermaid
+stateDiagram-v2
 READING --> SENDING : NO CGI
 READING --> WRITING : CGI POST
 WRITING --> PROCESSING
