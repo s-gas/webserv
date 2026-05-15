@@ -8,7 +8,11 @@
 #define GREEN "\033[32m"
 #define CYAN "\033[36m"
 
+// Makefile override check of LOG_INFO_ON
+#ifndef LOG_INFO_ON
 #define LOG_INFO_ON true
+#endif
+
 #define LOG_ERROR Log(Log::ERROR)
 #define LOG_DEBUG Log(Log::DEBUG)
 #define LOG_INFO if (!LOG_INFO_ON) {} else Log(Log::INFO)

@@ -60,7 +60,7 @@ jobs:
           pip3 install -r tests/src/e2e_test/requirements.txt
 
       - name: Compile Webserv
-        run: make
+        run: make LOG=0
 
       - name: Run E2E Python Tests
         run: |

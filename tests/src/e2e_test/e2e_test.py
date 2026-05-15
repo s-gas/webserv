@@ -60,9 +60,6 @@ def test_unsupported_cgi_script():
     response = requests.get(url, timeout=TIMEOUT)
     assert response.status_code != 200, "Unsupported CGI script (.php) should not return 200 OK"
 
-# -----------------------------------------------------------------------------
-# 4. Siege Stress Test Integration
-# -----------------------------------------------------------------------------
 def test_siege_stress_load():
     """Runs Siege as a subprocess and asserts that 0 transactions failed."""
     urls_file = ".siege_urls.txt"
@@ -73,18 +70,19 @@ def test_siege_stress_load():
         f.write(f"http://{HOST}:1026/\n")
 
     # Run siege for 30 seconds with 20 concurrent users
-    # Capture output to parse the results
     result = subprocess.run(
         ["siege", "-c20", "-t30S", f"-f{urls_file}"],
         capture_output=True,
         text=True
     )
     
+    import os
     os.remove(urls_file)
     
-    # Siege writes to stderr, even on success. We check for 'failed_transactions': 0
-    # or just parse the output.
     output = result.stderr + result.stdout
     
-    assert '"failed_transactions":\t           0' in output or '"failed_transactions": 0' in output.replace('\t', ' '), \
+    # Strip ALL whitespace (spaces, tabs, newlines) from the output to make the assertion bulletproof
+    clean_output = re.sub(r'\s+', '', output)
+    
+    assert '"failed_transactions":0' in clean_output, \
         f"Siege test failed or dropped connections!\nOutput:\n{output}"

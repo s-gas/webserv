@@ -5,6 +5,11 @@ NAME		= webserv
 CXX			= c++
 CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -I$(INC_DIR) -MMD -MP
 
+# Disable LOG_INFO
+ifeq ($(LOG), 0)
+	CXXFLAGS += -D LOG_INFO_ON=false
+endif
+
 # Colors
 GREEN		= \033[0;32m
 BLUE		= \033[0;36m
