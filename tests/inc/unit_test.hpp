@@ -1,5 +1,5 @@
-#ifndef TESTS_HPP
-# define TESTS_HPP
+#ifndef UNIT_TEST_HPP
+# define UNIT_TEST_HPP
 
 #include "Http.hpp"
 #include <iostream>

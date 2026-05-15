@@ -76,8 +76,6 @@ fclean: clean
 # Rebuild
 re: fclean all
 
-# |--- CleanUp ----------------------------------------------------------------|
-
 # Include .d files
 -include $(DEPS)
 

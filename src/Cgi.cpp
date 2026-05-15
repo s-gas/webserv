@@ -1,5 +1,4 @@
 #include "Cgi.hpp"
-#include "Log.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
@@ -82,7 +81,6 @@ void Cgi::execScript(int &readFd, int &writeFd) {
 // private ---------------------------------------------------------------------
 
 void Cgi::checkScriptFileName() {
-  LOG_INFO << "scripteFileName = " << scriptFileName;
   if (access(scriptFileName.c_str(), F_OK) == -1) {
     status = "404";
     throw std::runtime_error("CGI: Script not found: " + scriptFileName);
@@ -142,7 +140,6 @@ char **Cgi::vectorToArr(std::vector<std::string> &v) {
   for (size_t i = 0; i < v.size(); ++i) {
     arr[i] = new char[v[i].size() + 1];
     std::strcpy(arr[i], v[i].c_str());
-    LOG_INFO << "arg [" << i << "] = " << arr[i];
   }
   arr[v.size()] = NULL;
   return arr;

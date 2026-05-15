@@ -1,6 +1,6 @@
 #include <iostream>
 #include <exception>
-#include "tests.hpp"
+#include "unit_test.hpp"
 #include "parseConfig.hpp"
 #include "Server.hpp"
 
