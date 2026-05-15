@@ -32,8 +32,8 @@ void Cgi::execScript(int &readFd, int &writeFd) {
   envArr = mapToArr(envMap);
 
   // Piping
-  int pipePToC[2]; // Parent -> Child
-  int pipeCToP[2]; // Child -> Parent
+  int pipePToC[2] = {-1, -1}; // Parent -> Child
+  int pipeCToP[2] = {-1, -1}; // Child -> Parent
   if (pipe(pipeCToP) == -1 || pipe(pipePToC) == -1) {
     closePipes(pipePToC, pipeCToP);
     status = "500";
