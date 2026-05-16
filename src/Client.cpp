@@ -1,29 +1,29 @@
 #include "Client.hpp"
-#include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
-#include "readRequest.hpp"
 
-Client::Client() : server(NULL) {}
+Client::Client() {
+  init();
+}
 
-Client::Client(Server &s, int clientFd) : server(&s), locationIndex(-1), fd(clientFd) {}
+Client::Client(Server &s, int clientFd) {
+  init();
+  server = &s;
+  fd = clientFd;
+}
 
-bool Client::handleData() {
-  std::string requestString = readRequest(fd);
-  request = HttpRequest(requestString);
-  request.print();
-  if (!isRequestValid()) {
-      serveFile();
-  } else if (isCgi()) {
-      response.response = "Handle with CGI";
-      write(fd, response.response.c_str(), response.response.size());
-  } else {
-    generatePath();
-      if (request.method == "GET") serveFile();
-      else if (request.method == "POST") uploadFile();
-      else if (request.method == "DELETE") deleteFile();
-  }
-  return true;
+void Client::init() {
+  server = NULL;
+  locationIndex = -1;
+  fd = -1;
+  cgiWriteFd = -1;
+  cgiBytesWritten = 0;
+  cgiReadFd = -1;
+  state = READING;
+  cgiPid = -1;
+  startTime = 0;
+  lastActTime = time(NULL);
+  bytesSent = 0;
 }
 
 bool Client::isRequestValid() {
@@ -68,7 +68,6 @@ bool Client::isSizeOkay() {
     return (request.contentLength < location.maxBodySize);
 }
 
-
 void Client::generatePath() {
     Location location = server->locations[locationIndex];
     path = location.root;
@@ -81,14 +80,23 @@ void Client::writeHeader(std::string extension) {
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
     ss << "Server: " << response.server;
+    ss << "Connection: close\r\n";
     ss << "Content-Type: " << server->contentTypes[extension] << "\r\n";
     ss << "Content-Length: " << response.body.size() << "\r\n";
     ss << response.emptyLine;
     response.header = ss.str();
 }
 
+void Client::writeCgiHeader() {
+    std::ostringstream ss;
+    ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
+    ss << "Server: " << response.server;
+    ss << "Connection: close";
+    response.header = ss.str();
+}
+
 bool Client::isCgi() {
     if (locationIndex == -1) return false;
-    Location location = server->locations[locationIndex];
+    Location &location = server->locations[locationIndex];
     return !location.cgi.empty();
 }

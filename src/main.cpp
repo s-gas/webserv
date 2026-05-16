@@ -1,3 +1,4 @@
+#include "Cgi.hpp"
 #include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"

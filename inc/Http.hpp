@@ -2,7 +2,6 @@
 # define HTTP_HPP
 
 #include <cstddef>
-#include <iostream>
 #include <sstream>
 #include <vector>
 #include <map>
@@ -24,6 +23,7 @@ public:
 
     void setDirectoryAndFile();
     void print();
+    std::string contentLengthString();
 };
 
 class HttpResponse {

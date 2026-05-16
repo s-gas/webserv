@@ -1,7 +1,7 @@
 #include "Http.hpp"
 #include "readRequest.hpp"
 #include <cctype>
-#include <ctype.h>
+#include <iostream>
 
 HttpRequest::HttpRequest() : method(""), version(""), contentType(""), contentLength(0), body("") {}
 
@@ -44,6 +44,12 @@ void HttpRequest::setDirectoryAndFile() {
 void HttpRequest::print() {
     std::cout << std::endl << "REQUEST:" << std::endl;
     std::cout << rawString << std::endl;
+}
+
+std::string HttpRequest::contentLengthString() {
+    std::stringstream ss;
+    ss << this->contentLength;
+    return ss.str();
 }
 
 std::vector<std::string> parseContent(std::string &line) {

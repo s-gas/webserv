@@ -11,6 +11,7 @@ void signalHandler(int sig) {
 }
 
 void setSignals(void) {
+  signal(SIGCHLD, SIG_IGN);
   struct sigaction sigInterupt;
 
   std::memset(&sigInterupt, 0, sizeof(sigInterupt));

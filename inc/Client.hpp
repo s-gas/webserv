@@ -2,6 +2,7 @@
 # define CLIENT_HPP
 
 #include "Http.hpp"
+#include "defines.hpp"
 
 class Server;
 
@@ -13,23 +14,48 @@ public:
     std::string path;
     int locationIndex;
     int fd;
+    int cgiWriteFd;
+    size_t cgiBytesWritten;
 
     Client();
     Client(Server &s, int clientFd);
-    bool handleData();
-    void serveFile();
-    void uploadFile();
-    void deleteFile();
     bool isRequestValid();
     bool isMethodAllowed();
     int isEndpoint();
     void writeHeader(std::string extension);
+    void writeCgiHeader();
     void readFile();
     void writeFile();
     void generatePath();
     void writeError();
     bool isCgi();
     bool isSizeOkay();
+
+    // State Machine
+    void handleAction(int triggeredFd);
+    void processRequest();
+    void writeCgiChunk();
+    void readRequestChunk();
+    void readCgiChunk();
+    void sendResponseChunk();
+    void setupCgi();
+    void prepareFileResponse();
+    void prepareUploadResponse();
+    void prepareDeleteResponse();
+    void handleTimeout();
+    void prepareErrorResponse(std::string code);
+    bool is(ClientState s);
+    int cgiReadFd;
+    ClientState state;
+    pid_t cgiPid;
+    time_t startTime;
+    time_t lastActTime;
+    std::string requestRaw;
+    std::string responseRaw;
+    size_t bytesSent;
+
+private:
+    void init();
 };
 
 #endif

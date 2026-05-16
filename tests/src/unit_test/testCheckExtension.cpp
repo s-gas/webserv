@@ -1,11 +1,11 @@
 #include <iostream>
 #include <exception>
-#include "tests.hpp"
+#include "unit_test.hpp"
 #include "parseConfig.hpp"
 
-int testReadFile(int N, std::string argument, std::string string) {
-    std::string failure = std::string("readFile()  -->  ") + RED + "FAIL" + RESET;
-    std::string success = std::string("readFile()  -->  ") + GREEN + "SUCCESS" + RESET;
+int testCheckExtension(int N, std::string argument, std::string string) {
+    std::string failure = "checkExtension(\"" + argument + "\")  -->  " + RED + "FAIL" + RESET;
+    std::string success = "checkExtension(\"" + argument + "\")  -->  " + GREEN + "SUCCESS" + RESET;
     std::string pass;
     std::string except;
     if (string == "throw") {
@@ -15,9 +15,8 @@ int testReadFile(int N, std::string argument, std::string string) {
         pass = success;
         except = failure;
     }
-    std::ifstream file;
     try {
-        readFile(file, argument);
+        checkExtension(argument);
         std::cout << N << ": " << pass << std::endl;
         return (string == "throw") ? 1 : 0;
     } catch (std::exception &e) {

@@ -37,16 +37,16 @@ public:
 class Location: public Block {
 public:
     std::string endpoint;
-    std::string cgi;
+    std::map<std::string, std::vector<std::string> > cgi;
 
     Location();
 };
 
 class Server: public Block {
 public:
-    std::vector<int> _port;
-    std::vector<int> _serverFd;
-    std::vector<struct sockaddr_in> _addr;
+    std::vector<int> port;
+    std::vector<int> serverFd;
+    std::vector<struct sockaddr_in> addr;
     std::vector<Location> locations;
 
     Server();
@@ -59,8 +59,10 @@ public:
 
 class Config: public Block {
 public:
-    std::vector<Server> _servers;
+    std::vector<Server> servers;
     std::map<int, Client> clients;
+    std::map<int, int> readPipes;
+    std::map<int, int> writePipes;
 
     Config();
     ~Config();
@@ -71,11 +73,22 @@ public:
     int isServerFd(int fd);
     void handleNewConnections(int serverFd, int serverIndex);
     void removeClient(int fd);
+    void removeCgiPipe(int &pipeFd, std::map<int, int> &pipeMap);
+    void cleanUpClientCgi(Client &c);
+    void killCgiProcess(Client &c);
+    void registerCgiPipe(Client &c);
+    void checkTimeouts();
+    void updateEpollEvent(int fd, uint32_t events);
 
 private:
-    int _epollFd;
-    struct epoll_event _event;
-    struct epoll_event _events[MAX_EVENTS];
+    int epollFd;
+    struct epoll_event event;
+    struct epoll_event events[MAX_EVENTS];
+
+    void handleEpollError(int fd);
+    void handleCgiRead(int fd);
+    void handleCgiWrite(int fd);
+    void handleClient(int fd);
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <exception>
-#include "tests.hpp"
+#include "unit_test.hpp"
 #include "parseConfig.hpp"
 #include "Server.hpp"
 
@@ -63,16 +63,16 @@ int testEndpoints(int N, std::string argument, std::string *endpoints, size_t le
     bool hasServer = false;
     try {
         parseDirectives(main, file, 0, numBraces, hasServer);
-        if (main._servers.empty()) {
+        if (main.servers.empty()) {
             std::cout << N << ": " << failure << std::endl;
             return FAILURE;
         }
-        if (main._servers[server].locations.size() != len) {
+        if (main.servers[server].locations.size() != len) {
             std::cout << N << ": " << failure << std::endl;
             return FAILURE;
         }
         for (size_t j = 0; j < len; j++) {
-            if (endpoints[j] != main._servers[server].locations[j].endpoint) {
+            if (endpoints[j] != main.servers[server].locations[j].endpoint) {
                 std::cout << N << ": " << failure << std::endl;
                 return FAILURE;
             }
@@ -95,15 +95,15 @@ int testListenDirective(int N, std::string argument, size_t port) {
     try {
         parseDirectives(main, file, 0, numBraces, hasServer);
 
-        if (main._servers.empty()) {
+        if (main.servers.empty()) {
             std::cout << N << ": " << failure << std::endl;
             return FAILURE;
         }
 
         bool foundPort = false;
-        for (size_t i = 0; i < main._servers.size(); ++i) {
-            for (size_t j = 0; j < main._servers[i]._port.size(); ++j) {
-                if (main._servers[i]._port[j] == static_cast<int>(port)) {
+        for (size_t i = 0; i < main.servers.size(); ++i) {
+            for (size_t j = 0; j < main.servers[i].port.size(); ++j) {
+                if (main.servers[i].port[j] == static_cast<int>(port)) {
                     foundPort = true;
                     break;
                 }

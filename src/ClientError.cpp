@@ -1,8 +1,7 @@
 #include "Client.hpp"
-#include "Log.hpp"
 #include "Server.hpp"
-#include "defines.hpp"
-#include "readRequest.hpp"
+#include <fstream>
+#include <sys/wait.h>
 
 void Client::writeError() {
     std::string path;
@@ -13,4 +12,16 @@ void Client::writeError() {
                     std::istreambuf_iterator<char>());
         file.close();
     }
+}
+
+void Client::prepareErrorResponse(std::string code) {
+  if (!code.empty()) response.status = code;
+  writeError();
+  writeHeader(".html");
+  responseRaw = response.header + response.body;
+}
+
+void Client::handleTimeout() {
+  prepareErrorResponse("504");
+  state = SENDING;
 }

@@ -1,17 +1,5 @@
 #include "Client.hpp"
-#include "Log.hpp"
-#include "Server.hpp"
-#include "defines.hpp"
-#include "readRequest.hpp"
-
-void Client::serveFile() {
-    if (response.error == true) writeError();
-    else readFile();
-    writeHeader(".html");
-    response.response = response.header + response.body;
-    response.print();
-    write(fd, response.response.c_str(), response.response.size());
-}
+#include <fstream>
 
 void Client::readFile() {
     std::ifstream file(path.c_str());
@@ -25,4 +13,12 @@ void Client::readFile() {
         response.error = true;
         writeError();
     }
+}
+
+void Client::prepareFileResponse() {
+  generatePath();
+  readFile();
+  writeHeader(".html");
+  responseRaw = response.header + response.body;
+  state = SENDING;
 }

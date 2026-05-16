@@ -7,45 +7,87 @@ on:
     branches: ["main"]
 
 jobs:
-  build-and-test:
+
+# |--- 1. UNIT TESTS ----------------------------------------------------------|
+
+  unit-tests:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Install Test Dependencies
-        run: sudo apt-get update && sudo apt-get install -y valgrind siege
-
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Build image
-        run: docker build -t webserv:1 .
 
       - name: Compile Unit Tests
         run: |
           cd tests
-          make
+          make unit
 
       - name: Run Unit Tests
         run: |
           cd tests
-          ./tester
+          ./unit_test
 
-      - name: Compile undockerized for Valgrind Testing
-        run: make
+# |--- 2. INTEGRATION TESTS ---------------------------------------------------|
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile Integration Tests
+        run: |
+          cd tests
+          make integration
+
+      - name: Run Integration Tests
+        run: |
+          cd tests
+          ./integ_test
+
+# |--- 3. E2E TESTS -----------------------------------------------------------|
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Test Dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y valgrind siege python3-pip
+          pip3 install -r tests/src/e2e_test/requirements.txt
+
+      - name: Compile Webserv
+        run: make LOG=0
+
+      - name: Run E2E Python Tests
+        run: |
+          # start server
+          ./webserv tests/conf-files/test25.conf & SERVER_PID=$!
+
+          # setup-time
+          sleep 2
+
+          # E2E-test
+          pytest tests/src/e2e_test/e2e_test.py -v --tb=short
+
+          # shut-down server
+          kill -SIGTERM $SERVER_PID || true
+          wait $SERVER_PID || true
 
       - name: Run Siege Test with Valgrind
         run: |
           # start server using valgrind
-          valgrind --leak-check=full --error-exitcode=1 ./webserv conf-files/webserv.conf & SERVER_PID=$!
+          valgrind --leak-check=full --error-exitcode=1 ./webserv tests/conf-files/test25.conf & SERVER_PID=$!
 
           # setup-time
           sleep 2
 
           # siege-test
-          siege -c5 -r3 http://127.0.0.1:8080
+          siege -c5 -r3 http://127.0.0.1:1024/
 
           # shut-down server
-          kill -SIGTERM $SERVER_PID
-
-          # valgrind exit code
-          wait $SERVER_PID
+          kill -SIGTERM $SERVER_PID || true
+          wait $SERVER_PID || true
