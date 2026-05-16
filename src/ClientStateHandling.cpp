@@ -63,6 +63,7 @@ void Client::readRequestChunk() {
 }
 
 void Client::processRequest() {
+  LOG_REQUEST
   if (!isRequestValid()) {
     prepareErrorResponse(response.status);
     state = SENDING;
