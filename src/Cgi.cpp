@@ -14,7 +14,7 @@ Cgi::Cgi(HttpResponse &response, HttpRequest &request, Location &location)
   argArr = NULL;
   root = location.root;
   interpreter = location.cgi;
-  scriptName = request.file;
+  scriptName = request.file.empty() ? location.index : request.file;
   setScriptFileName(request, location);
   setEnvArr(request);
   setArgArr();

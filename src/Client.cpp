@@ -1,6 +1,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
+#include "Log.hpp"
 
 Client::Client() {
   init();
@@ -72,7 +73,7 @@ void Client::generatePath() {
     Location location = server->locations[locationIndex];
     path = location.root;
     path += location.endpoint == "/" ? request.endpoint : location.endpoint;
-    if (request.file == "") path += location.index;
+    path += request.file == "" ? location.index : request.file;
 }
 
 
