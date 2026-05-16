@@ -51,6 +51,7 @@ void Config::handleEpollError(int fd) {
     removeCgiPipe(clients[clientFd].cgiWriteFd, writePipes);
     clients[clientFd].state = PROCESSING;
   } else if (clients.count(fd)) {
+    removeClient(fd);
   }
 }
 

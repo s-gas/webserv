@@ -90,4 +90,4 @@ jobs:
 
           # shut-down server
           kill -SIGTERM $SERVER_PID || true
-          wait $SERVER_PID || true
+          wait $SERVER_PID
