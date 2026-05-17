@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include <fstream>
+#include "defines.hpp"
 
 void Client::readFile() {
     std::ifstream file(path.c_str());
@@ -20,5 +21,6 @@ void Client::prepareFileResponse() {
   readFile();
   writeHeader(".html");
   responseRaw = response.header + response.body;
+  LOG_RESPONSE
   state = SENDING;
 }

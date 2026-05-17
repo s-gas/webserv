@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
+#include "defines.hpp"
 #include <fstream>
 #include <sys/wait.h>
 
@@ -19,6 +20,7 @@ void Client::prepareErrorResponse(std::string code) {
   writeError();
   writeHeader(".html");
   responseRaw = response.header + response.body;
+  LOG_RESPONSE
 }
 
 void Client::handleTimeout() {

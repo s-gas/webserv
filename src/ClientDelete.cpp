@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "defines.hpp"
 #include <cstdio>
 
 void Client::prepareDeleteResponse() {
@@ -8,9 +9,11 @@ void Client::prepareDeleteResponse() {
     writeError();
   } else {
     response.status = "200";
-    response.body = "<html><body><h1>File deleted successfully</h1></body></html>\n";
+    response.body =
+        "<html><body><h1>File deleted successfully</h1></body></html>\n";
   }
   writeHeader(".html");
   responseRaw = response.header + response.body;
+  LOG_RESPONSE
   state = SENDING;
 }

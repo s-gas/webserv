@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>42 Webserv - Evaluation Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --panel-bg: #2d2d30;
+            --text-main: #cccccc;
+            --accent: #00babc;
+            --accent-hover: #008c8d;
+            --danger: #d16969;
+            --success: #4caf50;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-code: Consolas, 'Courier New', monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2, h3 {
+            color: #ffffff;
+            margin-top: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid #3e3e42;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        code, pre {
+            font-family: var(--font-code);
+            background-color: #000000;
+            color: #4caf50;
+            padding: 10px;
+            border-radius: 4px;
+            display: block;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: var(--accent-hover); }
+        button.danger { background-color: var(--danger); }
+        button.danger:hover { background-color: #a85454; }
+
+        input[type="text"], input[type="file"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #1e1e1e;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .response-box {
+            margin-top: 15px;
+            background-color: #000;
+            padding: 15px;
+            border-left: 4px solid var(--accent);
+            min-height: 80px;
+            font-family: var(--font-code);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        ul.checklist {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul.checklist li::before {
+            content: '✅';
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 42 Webserv Evaluation Dashboard</h1>
+    <p>Use this interface to demonstrate your server's capabilities to the evaluator.</p>
+
+    <div class="container">
+        
+        <div class="panel">
+            <h2>1. Basic HTTP Requests</h2>
+            <p>Test standard routing, error pages, and HTTP methods.</p>
+            
+            <button onclick="window.open('/directory_test/', '_blank')">Test Autoindex (Directory Listing)</button>
+            <button onclick="window.open('/does_not_exist.html', '_blank')">Test Custom 404 Error Page</button>
+            <button onclick="window.open('/redirect', '_blank')">Test HTTP Redirection</button>
+
+            <hr style="border-color: #3e3e42; margin: 20px 0;">
+            
+            <h3>DELETE Method</h3>
+            <input type="text" id="deleteTarget" placeholder="e.g., /uploads/test.txt" value="/uploads/test.txt">
+            <button class="danger" onclick="sendDelete()">Send DELETE Request</button>
+        </div>
+
+        <div class="panel">
+            <h2>2. File Uploads & Limits</h2>
+            <p>Verify POST requests and <code>client_max_body_size</code> limits.</p>
+            
+            <h3>Normal Upload</h3>
+            <input type="file" id="fileUpload">
+            <button onclick="uploadFile()">Upload File (POST)</button>
+
+            <hr style="border-color: #3e3e42; margin: 20px 0;">
+
+            <h3>Body Size Limit Test</h3>
+            <p>Send a massive payload to trigger a <code>413 Payload Too Large</code>.</p>
+            <button class="danger" onclick="sendOversizedPayload()">Send Oversized Payload</button>
+        </div>
+
+        <div class="panel full-width">
+            <h2>3. CGI Validation</h2>
+            <p>Verify that scripts execute correctly and handle errors gracefully.</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="executeCGI('GET', '/cgi-bin/test.py')">Execute CGI (GET)</button>
+                <button onclick="executeCGI('POST', '/cgi-bin/test.py')">Execute CGI (POST)</button>
+                <button class="danger" onclick="executeCGI('GET', '/cgi-bin/infinite_loop.py')">Test Infinite Loop Timeout</button>
+                <button class="danger" onclick="executeCGI('GET', '/cgi-bin/syntax_error.py')">Test CGI Crash (500 Error)</button>
+            </div>
+        </div>
+
+        <div class="panel full-width">
+            <h2>📡 Live Server Response</h2>
+            <p>Results from the fetch requests triggered above will appear here.</p>
+            <div id="output" class="response-box">Waiting for action...</div>
+        </div>
+
+        <div class="panel full-width">
+            <h2>4. Terminal Tests (Evaluator Copy-Paste)</h2>
+            <p>Run these in a separate terminal to verify routing and stress resilience.</p>
+            
+            <h3>Host Routing Test (Multiple hostnames on same port)</h3>
+            <code>curl -v --resolve example.com:8080:127.0.0.1 http://example.com/</code>
+
+            <h3>Malformed Request Test</h3>
+            <code>curl -X UNKNOWN_METHOD -v http://localhost:8080/</code>
+
+            <h3>Siege Stress Test (Availability > 99.5%)</h3>
+            <code>siege -b -c 50 -t 1m http://127.0.0.1:8080/</code>
+        </div>
+
+        <div class="panel full-width">
+            <h2>🌟 5. Bonus: Cookies & Sessions</h2>
+            <button onclick="executeCGI('GET', '/cgi-bin/set_cookie.py')">Set Session Cookie</button>
+            <button onclick="executeCGI('GET', '/cgi-bin/read_cookie.py')">Read Session Cookie</button>
+        </div>
+
+    </div>
+
+    <script>
+        const outputBox = document.getElementById('output');
+
+        function printOutput(status, statusText, body) {
+            let color = status >= 400 ? 'var(--danger)' : 'var(--success)';
+            outputBox.style.borderLeftColor = color;
+            outputBox.innerHTML = `<span style="color:${color}">Status: ${status} ${statusText}</span>\n\n${body}`;
+        }
+
+        // DELETE Method handler
+        async function sendDelete() {
+            const target = document.getElementById('deleteTarget').value;
+            outputBox.innerText = `Sending DELETE to ${target}...`;
+            try {
+                const response = await fetch(target, { method: 'DELETE' });
+                const text = await response.text();
+                printOutput(response.status, response.statusText, text || "Resource deleted successfully (or empty response).");
+            } catch (err) {
+                outputBox.innerText = `Fetch Error: ${err.message}`;
+            }
+        }
+
+        // POST Upload handler
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileUpload');
+            if (fileInput.files.length === 0) {
+                alert("Please select a file first.");
+                return;
+            }
+            
+            const file = fileInput.files[0];
+
+            outputBox.innerText = `Uploading ${file.name}...`;
+            try {
+                // Adjust this URL to match your webserv config upload route
+                const response = await fetch('/uploads/' + encodeURIComponent(file.name), {
+                    method: 'POST',
+					headers: {
+						'Content-Type': file.type || 'application/octet-stream'
+					},
+                    body: file
+                });
+                const text = await response.text();
+                printOutput(response.status, response.statusText, text || "Upload completed.");
+            } catch (err) {
+                outputBox.innerText = `Fetch Error: ${err.message}`;
+            }
+        }
+
+        // Oversized Payload handler (413 test)
+        async function sendOversizedPayload() {
+            // Generate a massive string (e.g., 5MB)
+            outputBox.innerText = "Generating large payload...";
+            const hugeBody = "A".repeat(5 * 1024 * 1024); 
+            
+            outputBox.innerText = `Sending POST request with ${hugeBody.length} bytes...`;
+            try {
+                const response = await fetch('/uploads/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: hugeBody
+                });
+                const text = await response.text();
+                printOutput(response.status, response.statusText, text || "Payload sent.");
+            } catch (err) {
+                outputBox.innerText = `Fetch Error: ${err.message}`;
+            }
+        }
+
+        // CGI Executor
+        async function executeCGI(method, scriptPath) {
+            outputBox.innerText = `Executing ${scriptPath} via ${method}...`;
+            
+            let options = { method: method };
+            if (method === 'POST') {
+                options.headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+                options.body = "user=evaluator&project=webserv";
+            }
+
+            try {
+                const response = await fetch(scriptPath, options);
+                const text = await response.text();
+                printOutput(response.status, response.statusText, text);
+            } catch (err) {
+                outputBox.innerText = `Fetch Error: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

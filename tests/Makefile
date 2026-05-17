@@ -84,7 +84,7 @@ $(OBJ_DIR):
 clean:
 		@rm -rf $(OBJ_DIR)
 
-fclean:
+fclean: clean
 		@rm -f unit_test integ_test
 
 re: fclean all

@@ -63,6 +63,7 @@ void Client::readRequestChunk() {
 }
 
 void Client::processRequest() {
+  LOG_REQUEST
   if (!isRequestValid()) {
     prepareErrorResponse(response.status);
     state = SENDING;
@@ -128,7 +129,7 @@ void Client::sendResponseChunk() {
   ssize_t sent =
       send(fd, responseRaw.c_str() + bytesSent, remaining, MSG_NOSIGNAL);
 
-  if (sent >= 0) {
+  if (sent > 0) {
     bytesSent += sent;
     if (bytesSent >= responseRaw.size()) {
       state = DONE;
