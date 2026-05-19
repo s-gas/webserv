@@ -73,9 +73,8 @@ void Client::generatePath() {
     Location location = server->locations[locationIndex];
     path = location.root;
     path += location.endpoint == "/" ? request.endpoint : location.endpoint;
-    path += request.file == "" ? location.index : request.file;
+    if (request.file == "") path += location.index;
 }
-
 
 void Client::writeHeader(std::string extension) {
     std::ostringstream ss;
