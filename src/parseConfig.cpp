@@ -80,6 +80,8 @@ void parseDirective(std::string &line, Block &block) {
         block.methods = parseMultipleValues(tokens);
     } else if (tokens[0] == "client_max_body_size") {
         block.maxBodySize = parseSize(tokens);
+    } else if (tokens[0] == "errors_root") {
+        block.errorsRoot = parseSingleValue(tokens);
     }
 }
 
@@ -120,4 +122,5 @@ void inheritDirectives(Block &child, Block &parent) {
     child.root = parent.root;
     child.index = parent.index;
     child.methods = parent.methods;
+    child.errorsRoot = parent.errorsRoot;
 }
