@@ -26,5 +26,4 @@ void Client::writeRedirectionHeader() {
     ss << "Content-Length: 0\r\n";
     ss << "\r\n";
     response.header = ss.str();
-    std::cout << response.header << std::endl;
 }
