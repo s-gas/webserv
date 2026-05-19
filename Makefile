@@ -30,6 +30,7 @@ SRC_FILES	= $(addsuffix .cpp, main \
 								ClientGet \
 								ClientPost \
 								ClientStateHandling \
+								ClientRedirect \
 								Config \
 								ConfigEventLoop \
 								HttpRequest \
