@@ -1,8 +1,9 @@
 #include "Http.hpp"
 #include <iostream>
 
-HttpResponse::HttpResponse(): status("200"), version("HTTP/1.1"), server("webserv\r\n"), emptyLine("\r\n"), error(false){
+HttpResponse::HttpResponse(): status("200"), version("HTTP/1.1"), server("webserv"), emptyLine("\r\n"), error(false){
     statuses["200"] = "OK";
+    statuses["302"] = "FOUND";
     statuses["400"] = "BAD REQUEST";
     statuses["403"] = "FORBIDDEN";
     statuses["404"] = "NOT FOUND";

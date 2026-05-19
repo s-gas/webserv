@@ -17,7 +17,6 @@ void Client::readFile() {
 }
 
 void Client::prepareFileResponse() {
-  generatePath();
   readFile();
   writeHeader(".html");
   responseRaw = response.header + response.body;

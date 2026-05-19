@@ -69,6 +69,8 @@ void Client::processRequest() {
     state = SENDING;
   } else if (isCgi()) {
     setupCgi();
+  } else if (isRedirect()) {
+    redirect();
   } else {
     generatePath();
     if (request.method == "GET") {

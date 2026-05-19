@@ -82,7 +82,12 @@ void parseDirective(std::string &line, Block &block) {
         block.maxBodySize = parseSize(tokens);
     } else if (tokens[0] == "errors_root") {
         block.errorsRoot = parseSingleValue(tokens);
-    }
+    } else if (tokens[0] == "redirect") {
+        if (block.type != LOCATION)
+            throw std::runtime_error("Redirect directive can be defined only in a location block");
+        Location &location = static_cast<Location &>(block);
+        location.redirect = tokens[1];
+    } 
 }
 
 std::string parseSingleValue(std::vector<std::string> tokens) {
