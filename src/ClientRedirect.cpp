@@ -21,7 +21,7 @@ void Client::writeRedirectionHeader() {
     response.status = "302";
     std::stringstream  ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
-    ss << "Server: " << response.server;
+    ss << "Server: " << response.server << "\r\n";
     ss << "Location: " << location.redirect << "\r\n";
     ss << "Content-Length: 0\r\n";
     ss << "\r\n";
