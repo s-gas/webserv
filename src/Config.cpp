@@ -2,7 +2,6 @@
 #include "Log.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
-#include "signal.hpp"
 #include <cerrno>
 #include <fcntl.h>
 #include <sys/epoll.h>

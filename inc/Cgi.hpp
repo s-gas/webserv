@@ -20,13 +20,16 @@ private:
   std::map<std::string, std::vector<std::string> > interpreter;
   std::map<std::string, std::string> envMap;
   std::string scriptName;
+  std::string scriptPath;
   std::string scriptFileName;
   std::string &status;
   char **envArr;
   char **argArr;
 
+  void checkMethod();
   void checkScriptFileName();
   void setScriptFileName(HttpRequest &request, Location &location);
+  void setScriptPath(HttpRequest &request, Location &location);
   void setEnvArr(HttpRequest &request);
   void setArgArr();
   char **mapToArr(std::map<std::string, std::string> &m);

@@ -16,6 +16,7 @@ Cgi::Cgi(HttpResponse &response, HttpRequest &request, Location &location)
   interpreter = location.cgi;
   scriptName = request.file.empty() ? location.index : request.file;
   setScriptFileName(request, location);
+  setScriptPath(request, location);
   setEnvArr(request);
   setArgArr();
 }
@@ -28,6 +29,7 @@ Cgi::~Cgi() {
 }
 
 void Cgi::execScript(int &readFd, int &writeFd) {
+  checkMethod();
   checkScriptFileName();
   envArr = mapToArr(envMap);
 
@@ -60,7 +62,7 @@ void Cgi::execScript(int &readFd, int &writeFd) {
     }
     close(pipePToC[0]);
     close(pipeCToP[1]);
-    if (execve(argArr[0], argArr, envArr) == -1) {
+    if (chdir(scriptPath.c_str()) == -1 || execve(argArr[0], argArr, envArr) == -1) {
       exit(1);
     }
   }
@@ -79,6 +81,13 @@ void Cgi::execScript(int &readFd, int &writeFd) {
 }
 
 // private ---------------------------------------------------------------------
+
+void Cgi::checkMethod() {
+  if (envMap["REQUEST_METHOD"] == "DELETE") {
+    status = "405";
+    throw std::runtime_error("CGI: Method not allowed" + scriptFileName);
+  }
+}
 
 void Cgi::checkScriptFileName() {
   if (access(scriptFileName.c_str(), F_OK) == -1) {
@@ -103,6 +112,11 @@ void Cgi::setScriptFileName(HttpRequest &request, Location &location) {
   scriptFileName +=
       location.endpoint == "/" ? request.endpoint : location.endpoint;
   scriptFileName += request.file.empty() ? location.index : request.file;
+}
+
+void Cgi::setScriptPath(HttpRequest &request, Location &location) {
+  scriptPath = location.root;
+  scriptPath += location.endpoint == "/" ? request.endpoint : location.endpoint;
 }
 
 // populating the env-Map
@@ -130,7 +144,7 @@ void Cgi::setArgArr() {
     throw std::runtime_error("CGI: No interpreter configured for " + fileExt);
   }
   std::vector<std::string> args = interpreter[fileExt];
-  args.push_back(scriptFileName);
+  args.push_back(scriptName);
   argArr = vectorToArr(args);
 }
 

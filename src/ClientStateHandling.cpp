@@ -115,6 +115,7 @@ void Client::readCgiChunk() {
     // finished read
     writeCgiHeader();
     responseRaw = response.header + response.body;
+    LOG_RESPONSE
     state = SENDING;
   } else {
     // pipe error
