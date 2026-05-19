@@ -1,5 +1,6 @@
 #include "unit_test.hpp"
 #include "Http.hpp"
+#include <iostream>
 
 int testHttp(int N, std::string argument, HttpRequest expected) {
     std::string failure = std::string("parseRequest()  -->  ") + RED + "FAIL" + RESET;
