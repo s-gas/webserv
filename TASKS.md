@@ -8,4 +8,3 @@
 - default config
 - default error-paths
 - redirect URL
-

@@ -7,13 +7,17 @@
 #include <iostream>
 
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
+  std::string fileName;
+  if (argc == 1) {
+    fileName = "conf-files/default.conf";
+  } else if (argc == 2) {
+    fileName = argv[1];
+  } else {
     std::cerr << "Usage: ./webserv <config file>" << std::endl;
     return 1;
   }
   setSignals();
   std::ifstream configFile;
-  std::string fileName = argv[1];
   Config main;
   try {
     checkExtension(fileName);
