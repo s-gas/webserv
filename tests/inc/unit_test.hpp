@@ -2,8 +2,6 @@
 # define UNIT_TEST_HPP
 
 #include "Http.hpp"
-#include <iostream>
-#include <fstream>
 
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"

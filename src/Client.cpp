@@ -1,7 +1,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "defines.hpp"
-#include "Log.hpp"
 
 Client::Client() {
   init();

@@ -1,6 +1,7 @@
 #include "unit_test.hpp"
 #include "readRequest.hpp"
 #include <string>
+#include <iostream>
 
 int testGetContentLength(int N, std::string argument, size_t result) {
     std::string failure = std::string("getContentLength()  -->  ") + RED + "FAIL" + RESET;

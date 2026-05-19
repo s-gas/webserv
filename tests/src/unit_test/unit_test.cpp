@@ -1,5 +1,6 @@
 #include "unit_test.hpp"
 #include "Server.hpp"
+#include <iostream>
 
 int main() {
     int failures = 0;
