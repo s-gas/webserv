@@ -40,6 +40,7 @@ public:
     void sendResponseChunk();
     void setupCgi();
     void prepareFileResponse();
+    void writeDirectoryList();
     void prepareUploadResponse();
     void prepareDeleteResponse();
     void handleTimeout();

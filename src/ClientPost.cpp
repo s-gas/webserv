@@ -1,3 +1,4 @@
+#include "Server.hpp"
 #include "Client.hpp"
 #include "Log.hpp"
 #include "defines.hpp"
@@ -20,7 +21,14 @@ void Client::writeFile() {
 }
 
 void Client::prepareUploadResponse() {
-  writeFile();
+  Location &location = server->locations[locationIndex];
+  if(location.autoIndex == true) {
+    response.status = "403";
+    response.error = true;
+    writeError();
+  } else {
+    writeFile();
+  }
   writeHeader(".html");
   responseRaw = response.header + response.body;
   LOG_RESPONSE
