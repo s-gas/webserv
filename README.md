@@ -8,7 +8,9 @@
 
 - [Description](#description)
 - [Configuration file](#configuration-file)
+- [CGI Implementation](#cgi-implementation)
 - [How to run](#how-to-run)
+- [Resources](#resources)
 
 ## Description
 
@@ -146,7 +148,7 @@ server {
 
   It can be defined in any block.
 
-- autoindex
+- `autoindex`
 
   If set to true, lists the directory files.
 
@@ -154,13 +156,13 @@ server {
 
   It can be defined in any block.
 
-- redirect
+- `redirect`
 
   Redirects to the specified location.
 
   It can be defined only in `location`.
 
-- errors_root
+- `errors_root`
 
   Defines from where to serve the error files.
 
@@ -213,6 +215,56 @@ To solve this, simply add a trailing `/`:
 ```bash
 http://<ip>:<port>/directory.name/
 ```
+
+## CGI Implementation
+
+### Config Syntax
+```c++
+location /cgi-bin {
+    root ./www/cgi-bin;
+    allow_methods GET POST;
+    cgi_pass .php /usr/bin/php-cgi;
+    cgi_pass .py /usr/bin/python3;
+}
+```
+
+### URL (Uniform Resource Locator)
+
+| URL | `http://` | `localhost` | `:8080` | `/cgi-bin/` | `folder/test.php` | `/extra/path` | `?` | `name=example` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Component** | `Protocol` | `Host` | `Port` | `Location` | `File in root` | `Path Info` |  | `Query` |
+| **CGI Variable** | `REQUEST_SCHEME` | `SERVER_NAME` | `SERVER_PORT` | `SCRIPT_NAME` | `SCRIPT_NAME` | `PATH_INFO` |  | `QUERY_STRING` |
+
+---
+
+### HTTP Header (Hypertext Transfer Protocol)
+
+| HTTP Header | `POST` | `/cgi-bin/folder/test.php` | `/extra/path` | `?` | `name=example` | `HTTP/1.1` |
+| --- | --- | --- | --- | --- | --- | --- |
+| **CGI Variable** | `REQUEST_METHOD` | `SCRIPT_NAME` | `PATH_INFO` |  | `QUERY_STRING` | `SERVER_PROTOCOL` |
+
+### Important "Hidden" Variables
+
+- `CONTENT_LENGTH`: in HTTP-Header as `Content-Length`
+- `CONTENT_TYPE`: in HTTP-Header as `Content-Type`
+- `PATH_TRANSLATED`: `root` + `PATH_INFO`
+
+### Mandatory Core Variables
+
+| Variable | Source |
+| --- | --- |
+| `GATEWAY_INTERFACE` | `CGI/1.1` |
+| `SERVER_PROTOCOL` | `HTTP/1.1` |
+| `SERVER_SOFTWARE` | `42webserv/1.0` |
+| `REQUEST_METHOD` | `GET` or `POST` |
+| `QUERY_STRING` | Everthing after `?` |
+| `CONTENT_LENGTH` | From Headers if `POST` |
+| `CONTENT_TYPE` | From Headers if `POST` |
+| `SCRIPT_NAME` | path including `.file` |
+| `SCRIPT_FILENAME` | `root` + `SCRIPT_NAME` |
+| `PATH_INFO` | trailing path after `.file` |
+| `PATH_TRANSLATED` | `root` + `PATH_INFO` |
+| `REDIRECT_STATUS` | `200` |
 
 ## How to run
 
@@ -267,58 +319,7 @@ This will run the program with `conf-files/webserv.conf` as argument.
 | -p     | Publish a container's port(s) to the host          |
 | --name | Assign a name to the container                     |
 
-
-## CGI Implementation
-
-### Config Syntax
-```c++
-location /cgi-bin {
-    root ./www/cgi-bin;
-    allow_methods GET POST;
-    cgi_pass .php /usr/bin/php-cgi;
-    cgi_pass .py /usr/bin/python3;
-}
-```
-
-### URL (Uniform Resource Locator)
-
-| URL | `http://` | `localhost` | `:8080` | `/cgi-bin/` | `folder/test.php` | `/extra/path` | `?` | `name=example` |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Component** | `Protocol` | `Host` | `Port` | `Location` | `File in root` | `Path Info` |  | `Query` |
-| **CGI Variable** | `REQUEST_SCHEME` | `SERVER_NAME` | `SERVER_PORT` | `SCRIPT_NAME` | `SCRIPT_NAME` | `PATH_INFO` |  | `QUERY_STRING` |
-
----
-
-### HTTP Header (Hypertext Transfer Protocol)
-
-| HTTP Header | `POST` | `/cgi-bin/folder/test.php` | `/extra/path` | `?` | `name=example` | `HTTP/1.1` |
-| --- | --- | --- | --- | --- | --- | --- |
-| **CGI Variable** | `REQUEST_METHOD` | `SCRIPT_NAME` | `PATH_INFO` |  | `QUERY_STRING` | `SERVER_PROTOCOL` |
-
-### Important "Hidden" Variables
-
-- `CONTENT_LENGTH`: in HTTP-Header as `Content-Length`
-- `CONTENT_TYPE`: in HTTP-Header as `Content-Type`
-- `PATH_TRANSLATED`: `root` + `PATH_INFO`
-
-### Mandatory Core Variables
-
-| Variable | Source |
-| --- | --- |
-| `GATEWAY_INTERFACE` | `CGI/1.1` |
-| `SERVER_PROTOCOL` | `HTTP/1.1` |
-| `SERVER_SOFTWARE` | `42webserv/1.0` |
-| `REQUEST_METHOD` | `GET` or `POST` |
-| `QUERY_STRING` | Everthing after `?` |
-| `CONTENT_LENGTH` | From Headers if `POST` |
-| `CONTENT_TYPE` | From Headers if `POST` |
-| `SCRIPT_NAME` | path including `.file` |
-| `SCRIPT_FILENAME` | `root` + `SCRIPT_NAME` |
-| `PATH_INFO` | trailing path after `.file` |
-| `PATH_TRANSLATED` | `root` + `PATH_INFO` |
-| `REDIRECT_STATUS` | `200` |
-
-## Resource
+## Resources
 
 [Nginx Documentation](https://nginx.org/en/docs/)
 
