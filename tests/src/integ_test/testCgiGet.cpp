@@ -25,7 +25,7 @@ void testCgiGet() {
   req.method = "GET";
   req.version = "HTTP/1.1";
   req.file = "testGet.py";
-  req.endpoint = "/";
+  req.endpoint = "testGet.py";
 
   HttpResponse res;
   res.status = "200";

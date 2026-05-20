@@ -67,7 +67,8 @@ void Client::processRequest() {
   if (!isRequestValid()) {
     prepareErrorResponse(response.status);
     state = SENDING;
-  } else if (isCgi()) {
+  } else if (isCgi() && !(request.file.empty() &&
+                          server->locations[locationIndex].autoIndex)) {
     setupCgi();
   } else if (isRedirect()) {
     redirect();

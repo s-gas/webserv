@@ -23,7 +23,7 @@ void testCgiPost() {
   req.method = "POST";
   req.version = "HTTP/1.1";
   req.file = "testPost.py";
-  req.endpoint = "/";
+  req.endpoint = "testPost.py";
   req.contentLength = 13;
 
   HttpResponse res;

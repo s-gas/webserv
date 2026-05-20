@@ -19,7 +19,7 @@ void testCgiFileErrors() {
   HttpRequest req;
   req.method = "GET";
   req.version = "HTTP/1.1";
-  req.endpoint = "/";
+  req.endpoint = "doesNotExist.py";
 
   HttpResponse res;
   res.status = "200";
@@ -40,6 +40,7 @@ void testCgiFileErrors() {
   chmod("forbidden.py", 0000);
 
   req.file = "forbidden.py";
+  req.endpoint = "forbidden.py";
   res.status = "200";
   try {
     Cgi cgi(res, req, loc);

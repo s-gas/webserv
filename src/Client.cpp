@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
+#include "Log.hpp"
 #include "defines.hpp"
 
 Client::Client() {
@@ -63,13 +64,13 @@ int Client::isEndpoint() {
 }
 
 bool Client::isSizeOkay() {
-    Location location = server->locations[locationIndex];
+    Location &location = server->locations[locationIndex];
     if (location.maxBodySize == 0) return true;
     return (request.contentLength < location.maxBodySize);
 }
 
 void Client::generatePath() {
-    Location location = server->locations[locationIndex];
+    Location &location = server->locations[locationIndex];
     path = location.root + request.endpoint;
     if (request.file.empty() && location.autoIndex == false) path += location.index;
 }
