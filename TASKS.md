@@ -1,7 +1,7 @@
 # TODO
 
 ## Serge
-- CGI exec in directory
+- add new generatePATH logic to CGI
+- add catch for file/directory
 
 ## Simone
-- redirect URL

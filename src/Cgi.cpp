@@ -1,4 +1,5 @@
 #include "Cgi.hpp"
+#include "Log.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
@@ -108,15 +109,12 @@ void Cgi::checkScriptFileName() {
 }
 
 void Cgi::setScriptFileName(HttpRequest &request, Location &location) {
-  scriptFileName = location.root;
-  scriptFileName +=
-      location.endpoint == "/" ? request.endpoint : location.endpoint;
-  scriptFileName += request.file.empty() ? location.index : request.file;
+  scriptFileName = location.root + request.endpoint;
+  if (request.file.empty()) scriptFileName += location.index;
 }
 
 void Cgi::setScriptPath(HttpRequest &request, Location &location) {
-  scriptPath = location.root;
-  scriptPath += location.endpoint == "/" ? request.endpoint : location.endpoint;
+  scriptPath = location.root + request.directory;
 }
 
 // populating the env-Map
@@ -127,7 +125,7 @@ void Cgi::setEnvArr(HttpRequest &request) {
   envMap["CONTENT_LENGTH"] = request.contentLengthString();
   envMap["CONTENT_TYPE"] = request.contentType;
   envMap["SCRIPT_NAME"] = scriptName; // path including .file
-  envMap["SCRIPT_FILENAME"] = scriptFileName;
+  envMap["SCRIPT_FILENAME"] = scriptName;
   envMap["REDIRECT_STATUS"] = status;
 }
 
