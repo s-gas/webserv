@@ -7,6 +7,7 @@ void Client::prepareDeleteResponse() {
   Location &location = server->locations[locationIndex];
   if(location.autoIndex == true) {
     response.status = "403";
+    response.error = true;
     writeError();
   }
   else if (std::remove(path.c_str()) != 0) {
