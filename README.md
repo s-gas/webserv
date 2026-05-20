@@ -146,6 +146,30 @@ server {
 
   It can be defined in any block.
 
+- autoindex
+
+  If set to true, lists the directory files.
+
+  By default, is set to false.
+
+  It can be defined in any block.
+
+- redirect
+
+  Redirects to the specified location.
+
+  It can be defined only in `location`.
+
+- errors_root
+
+  Defines from where to serve the error files.
+
+  By default, is set to `www/errors`.
+
+  It can be defined in any block.
+
+  
+
 ### Simple web server
 
 The configuration file of a simple web server would look like this:
@@ -293,5 +317,13 @@ location /cgi-bin {
 | `PATH_INFO` | trailing path after `.file` |
 | `PATH_TRANSLATED` | `root` + `PATH_INFO` |
 | `REDIRECT_STATUS` | `200` |
+
+## Resource
+
+[Nginx Documentation](https://nginx.org/en/docs/)
+
+### AI Usage
+
+AI (Claude) was used mainly for clarifying the concepts read in the documentation.
 
 [Back to top](#webserv)
