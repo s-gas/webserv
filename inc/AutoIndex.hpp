@@ -1,5 +1,5 @@
-#ifndef CGI_HPP
-#define CGI_HPP
+#ifndef AUTOINDEX_HPP
+#define AUTOINDEX_HPP
 
 #include <string>
 
