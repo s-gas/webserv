@@ -71,8 +71,16 @@ bool Client::isSizeOkay() {
 void Client::generatePath() {
     Location location = server->locations[locationIndex];
     path = location.root;
-    path += location.endpoint == "/" ? request.endpoint : location.endpoint;
-    if (request.file == "" && location.autoIndex == false) path += location.index;
+    if (location.endpoint == "/") {
+      path += request.endpoint;
+    } else {
+      path += location.endpoint;
+    }
+    if (request.file.empty() && location.autoIndex == false) {
+        path += location.index;
+    } else {
+        path += request.file;
+    }
 }
 
 void Client::writeHeader(std::string extension) {
