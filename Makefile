@@ -22,6 +22,7 @@ INC_DIR		= inc
 
 # Source files
 SRC_FILES	= $(addsuffix .cpp, main \
+								AutoIndex \
 								Block \
 								Cgi \
 								Client \

@@ -28,6 +28,7 @@ public:
     std::string root;
     std::string errorsRoot;
     std::string index;
+    bool autoIndex;
     size_t maxBodySize;
 
     Block(enum BlockType type);

@@ -10,6 +10,7 @@ DEP_SRCS		=	checkExtension.cpp \
 					parseConfig.cpp \
 					parseConfigUtils.cpp \
 					readFile.cpp \
+					AutoIndex.cpp \
 					Block.cpp \
 					Cgi.cpp \
 					Config.cpp \

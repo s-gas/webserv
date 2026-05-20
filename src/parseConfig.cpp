@@ -80,6 +80,11 @@ void parseDirective(std::string &line, Block &block) {
         block.methods = parseMultipleValues(tokens);
     } else if (tokens[0] == "client_max_body_size") {
         block.maxBodySize = parseSize(tokens);
+    } else if (tokens[0] == "autoindex") {
+        if (tokens[1] != "on" && tokens[1] != "false") {
+            throw std::runtime_error("Invalid value of autoindex");
+        }
+        block.autoIndex = tokens[1] == "on" ? true : false;
     } else if (tokens[0] == "errors_root") {
         block.errorsRoot = parseSingleValue(tokens);
     } else if (tokens[0] == "redirect") {
@@ -127,5 +132,6 @@ void inheritDirectives(Block &child, Block &parent) {
     child.root = parent.root;
     child.index = parent.index;
     child.methods = parent.methods;
+    child.autoIndex = parent.autoIndex;
     child.errorsRoot = parent.errorsRoot;
 }

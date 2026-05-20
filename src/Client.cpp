@@ -72,7 +72,7 @@ void Client::generatePath() {
     Location location = server->locations[locationIndex];
     path = location.root;
     path += location.endpoint == "/" ? request.endpoint : location.endpoint;
-    if (request.file == "") path += location.index;
+    if (request.file == "" && location.autoIndex == false) path += location.index;
 }
 
 void Client::writeHeader(std::string extension) {

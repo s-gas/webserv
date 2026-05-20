@@ -1,7 +1,7 @@
 #include "Server.hpp"
 
 Block::Block(enum BlockType BlockType)
-: type(BlockType), root("www"), errorsRoot("www/errors"), index("index.html"), maxBodySize(0) {
+: type(BlockType), root("www"), errorsRoot("www/errors"), index("index.html"), autoIndex(false), maxBodySize(0) {
     methods.insert("GET");
     methods.insert("POST");
     methods.insert("DELETE");
