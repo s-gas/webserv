@@ -78,7 +78,7 @@ void Client::generatePath() {
 void Client::writeHeader(std::string extension) {
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
-    ss << "Server: " << response.server;
+    ss << "Server: " << response.server << "\r\n";
     ss << "Connection: close\r\n";
     ss << "Content-Type: " << server->contentTypes[extension] << "\r\n";
     ss << "Content-Length: " << response.body.size() << "\r\n";
@@ -89,8 +89,8 @@ void Client::writeHeader(std::string extension) {
 void Client::writeCgiHeader() {
     std::ostringstream ss;
     ss << response.version << " " << response.status << " " << response.statuses[response.status] << "\r\n";
-    ss << "Server: " << response.server;
-    ss << "Connection: close";
+    ss << "Server: " << response.server << "\r\n";
+    ss << "Connection: close\r\n";
     response.header = ss.str();
 }
 
@@ -99,3 +99,4 @@ bool Client::isCgi() {
     Location &location = server->locations[locationIndex];
     return !location.cgi.empty();
 }
+

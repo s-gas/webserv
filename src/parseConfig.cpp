@@ -80,12 +80,23 @@ void parseDirective(std::string &line, Block &block) {
         block.methods = parseMultipleValues(tokens);
     } else if (tokens[0] == "client_max_body_size") {
         block.maxBodySize = parseSize(tokens);
+<<<<<<< HEAD
     } else if (tokens[0] == "autoindex") {
         if (tokens[1] != "on" && tokens[1] != "false") {
             throw std::runtime_error("Invalid value of autoindex");
         }
         block.autoIndex = tokens[1] == "on" ? true : false;
     }
+=======
+    } else if (tokens[0] == "errors_root") {
+        block.errorsRoot = parseSingleValue(tokens);
+    } else if (tokens[0] == "redirect") {
+        if (block.type != LOCATION)
+            throw std::runtime_error("Redirect directive can be defined only in a location block");
+        Location &location = static_cast<Location &>(block);
+        location.redirect = tokens[1];
+    } 
+>>>>>>> main
 }
 
 std::string parseSingleValue(std::vector<std::string> tokens) {
@@ -126,4 +137,5 @@ void inheritDirectives(Block &child, Block &parent) {
     child.index = parent.index;
     child.methods = parent.methods;
     child.autoIndex = parent.autoIndex;
+    child.errorsRoot = parent.errorsRoot;
 }

@@ -24,11 +24,14 @@ public:
     int isEndpoint();
     void writeHeader(std::string extension);
     void writeCgiHeader();
+    void writeRedirectionHeader();
     void readFile();
     void writeFile();
     void generatePath();
     void writeError();
+    void redirect();
     bool isCgi();
+    bool isRedirect();
     bool isSizeOkay();
 
     // State Machine

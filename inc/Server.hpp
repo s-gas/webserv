@@ -39,6 +39,7 @@ class Location: public Block {
 public:
     std::string endpoint;
     std::map<std::string, std::vector<std::string> > cgi;
+    std::string redirect;
 
     Location();
 };
