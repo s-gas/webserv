@@ -125,4 +125,5 @@ void inheritDirectives(Block &child, Block &parent) {
     child.root = parent.root;
     child.index = parent.index;
     child.methods = parent.methods;
+    child.autoIndex = parent.autoIndex;
 }

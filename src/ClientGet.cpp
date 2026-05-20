@@ -25,7 +25,7 @@ void Client::readFile() {
 void Client::prepareFileResponse() {
   Location &location = server->locations[locationIndex];
   LOG_INFO << "location.autoIndex " << location.autoIndex;
-  if (location.autoIndex == true) {
+  if (request.file.empty() && location.autoIndex == true) {
     writeDirectoryList();
   } else {
     readFile();
